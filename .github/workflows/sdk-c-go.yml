@@ -128,14 +128,6 @@ jobs:
         shell: pwsh
         run: ./sdk/go/scripts/install-llvm-mingw.ps1 -Arch aarch64
 
-      - name: Prepare Windows Go CGO import library
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          lib_dir="${GITHUB_WORKSPACE}/target/${{ matrix.target }}/release"
-          native_dir="${GITHUB_WORKSPACE}/sdk/go/native/${{ matrix.target }}"
-          bash sdk/go/scripts/prepare-windows-cgo.sh "$lib_dir" "$native_dir"
-
       - name: Go tests (sdk/go)
         shell: bash
         working-directory: sdk/go
@@ -157,6 +149,12 @@ jobs:
           esac
           go run ./cmd/chunk-native-ensure "${ensure_args[@]}"
           lib_dir="${GITHUB_WORKSPACE}/target/${{ matrix.target }}/release"
+          case "${{ matrix.target }}" in
+            *-pc-windows-msvc)
+              bash ../scripts/prepare-windows-cgo.sh "$lib_dir" \
+                "${GITHUB_WORKSPACE}/sdk/go/native/${{ matrix.target }}"
+              ;;
+          esac
           case "${{ matrix.target }}" in
             *-apple-darwin) export DYLD_LIBRARY_PATH="${lib_dir}:${DYLD_LIBRARY_PATH:-}" ;;
             *-pc-windows-msvc) export PATH="${lib_dir}:${PATH}" ;;
@@ -187,4 +185,10 @@ jobs:
           esac
           # Use monorepo-built artifacts; -force would re-download from GitHub Releases.
           go run ./cmd/chunk-native-ensure
+          case "${{ matrix.target }}" in
+            *-pc-windows-msvc)
+              bash ../scripts/prepare-windows-cgo.sh "$lib_dir" \
+                "${GITHUB_WORKSPACE}/sdk/go/native/${{ matrix.target }}"
+              ;;
+          esac
           go test -count=1 ./...

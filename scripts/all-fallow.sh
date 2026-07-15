@@ -5,5 +5,23 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="${ROOT}/node_modules/.bin:${PATH}"
 
+E2E_TS="${ROOT}/sdk/e2e/typescript"
+if [[ ! -d "${E2E_TS}/node_modules" ]]; then
+	if [[ ! -f "${E2E_TS}/package.json" ]]; then
+		if [[ -z "${CYT_RELEASE_VERSION:-}" ]]; then
+			CYT_RELEASE_VERSION="$(
+				awk -F'"' '/^version = / { print $2; exit }' "${ROOT}/Cargo.toml"
+			)"
+			export CYT_RELEASE_VERSION
+		fi
+		export CYT_E2E_USE_WORKSPACE=1
+		"${ROOT}/sdk/e2e/scripts/render-manifests.sh"
+	fi
+	(
+		cd "${E2E_TS}"
+		npm install
+	)
+fi
+
 cd "${ROOT}/sdk"
 task all-fallow

@@ -12,6 +12,7 @@ env/
 .mypy_cache/
 .ruff_cache/
 .code-review-graph
+.codebase-memory/
 .grepai
 .cursor
 .temp
@@ -147,3 +148,4 @@ graphify-out/cost.json
 graphify-out/cache/
 .debug/rules/cyt-injection.mdc
 .git_old
+.gitnexus/

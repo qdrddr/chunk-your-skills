@@ -67,6 +67,13 @@ func importLibName(triplet string) string {
 	return ""
 }
 
+func mingwImportLibName(triplet string) string {
+	if isWindowsMSVC(triplet) {
+		return "libchunk_your_skills.a"
+	}
+	return ""
+}
+
 func resolveTriplet() (string, error) {
 	if env := strings.TrimSpace(os.Getenv("CYT_RUST_TARGET")); env != "" {
 		if err := validateTriplet(env); err != nil {

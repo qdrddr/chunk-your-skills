@@ -8,8 +8,8 @@ package chunkyourskills
 #cgo linux,arm64 LDFLAGS: -L${SRCDIR}/native/aarch64-unknown-linux-gnu -L${SRCDIR}/../../target/aarch64-unknown-linux-gnu/release -lchunk_your_skills -lm -ldl -pthread
 #cgo darwin,amd64 LDFLAGS: -L${SRCDIR}/native/x86_64-apple-darwin -L${SRCDIR}/../../target/x86_64-apple-darwin/release -lchunk_your_skills -framework Security -lpthread
 #cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/native/aarch64-apple-darwin -L${SRCDIR}/../../target/aarch64-apple-darwin/release -lchunk_your_skills -framework Security -lpthread
-#cgo windows,amd64 LDFLAGS: -L${SRCDIR}/native/x86_64-pc-windows-msvc -L${SRCDIR}/../../target/x86_64-pc-windows-msvc/release -lchunk_your_skills
-#cgo windows,arm64 LDFLAGS: -L${SRCDIR}/native/aarch64-pc-windows-msvc -L${SRCDIR}/../../target/aarch64-pc-windows-msvc/release -lchunk_your_skills
+#cgo windows,amd64 LDFLAGS: ${SRCDIR}/native/x86_64-pc-windows-msvc/libchunk_your_skills.a
+#cgo windows,arm64 LDFLAGS: ${SRCDIR}/native/aarch64-pc-windows-msvc/libchunk_your_skills.a
 #ifdef index
 #undef index
 #endif

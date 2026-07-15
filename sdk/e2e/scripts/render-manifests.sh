@@ -18,6 +18,7 @@ fi
 render() {
 	local src="$1"
 	local dst="$2"
+	mkdir -p "$(dirname "$dst")"
 	sed "s/@CYT_RELEASE_VERSION@/${VERSION}/g" "$src" >"$dst"
 	echo "rendered ${dst}"
 }
@@ -78,7 +79,7 @@ render_typescript_package() {
   "scripts": {
     "test": "node test/run.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "chunk-your-skills": "file:../../typescript"
   }
 }
@@ -91,6 +92,7 @@ EOF
 
 render_clear_your_tools_pyproject() {
 	local dst="${ROOT}/clear-your-tools/pyproject.toml"
+	mkdir -p "$(dirname "$dst")"
 	if [[ "${CYT_E2E_USE_WORKSPACE:-}" == "1" ]]; then
 		cat >"$dst" <<'EOF'
 [project]

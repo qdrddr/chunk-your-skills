@@ -108,6 +108,9 @@ crate)
 pypi-sdk)
 	wait_loop "PyPI/chunk-your-skills" pypi_has_version "chunk-your-skills" "$VERSION"
 	;;
+pypi-app)
+	wait_loop "PyPI/clear-your-tools" pypi_has_version "clear-your-tools" "$VERSION"
+	;;
 npm)
 	wait_loop "npm/chunk-your-skills" npm_has_version "$VERSION"
 	;;

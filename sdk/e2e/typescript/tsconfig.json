@@ -9,9 +9,6 @@
     "checkJs": true,
     "noEmit": true,
     "types": ["node"],
-    "paths": {
-      "chunk-your-skills": ["../../typescript/src/index.ts"]
-    },
     "typeRoots": [
       "../../typescript/node_modules/@types",
       "./node_modules/@types"

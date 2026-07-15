@@ -118,6 +118,17 @@ func TestHasNativeLibsWindowsImportLib(t *testing.T) {
 	}
 }
 
+func TestHasNativeLibsWindowsMingwImportLib(t *testing.T) {
+	dir := t.TempDir()
+	triplet := "aarch64-pc-windows-msvc"
+	if err := os.WriteFile(filepath.Join(dir, "libchunk_your_skills.a"), []byte("import"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if !hasNativeLibs(dir, triplet) {
+		t.Fatal("expected libchunk_your_skills.a to satisfy hasNativeLibs on Windows")
+	}
+}
+
 func TestResolveTripletUsesEnv(t *testing.T) {
 	t.Setenv("CYT_RUST_TARGET", "aarch64-unknown-linux-gnu")
 	got, err := resolveTriplet()
@@ -137,6 +148,7 @@ func TestCopyArtifactsStaticOnlyWindows(t *testing.T) {
 	for name, content := range map[string]string{
 		"chunk_your_skills.dll":     "shared",
 		"chunk_your_skills.dll.lib": "import",
+		"chunk_your_skills.lib":     "msvc-static",
 		"chunk_your_skills.h":       "header",
 	} {
 		if err := os.WriteFile(filepath.Join(src, name), []byte(content), 0o644); err != nil {
@@ -152,6 +164,39 @@ func TestCopyArtifactsStaticOnlyWindows(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dest, "chunk_your_skills.dll")); !os.IsNotExist(err) {
 		t.Fatal("shared dll should be omitted with staticOnly")
+	}
+	if _, err := os.Stat(filepath.Join(dest, "chunk_your_skills.lib")); !os.IsNotExist(err) {
+		t.Fatal("MSVC static lib should not be copied for Windows Go cgo")
+	}
+}
+
+func TestCopyArtifactsWindowsShared(t *testing.T) {
+	src := t.TempDir()
+	dest := t.TempDir()
+	triplet := "aarch64-pc-windows-msvc"
+
+	for name, content := range map[string]string{
+		"chunk_your_skills.dll":  "shared",
+		"libchunk_your_skills.a": "mingw-import",
+		"chunk_your_skills.lib":  "msvc-static",
+		"chunk_your_skills.h":    "header",
+	} {
+		if err := os.WriteFile(filepath.Join(src, name), []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := copyArtifacts(src, dest, triplet, false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dest, "chunk_your_skills.dll")); err != nil {
+		t.Fatal("missing shared dll")
+	}
+	if _, err := os.Stat(filepath.Join(dest, "libchunk_your_skills.a")); err != nil {
+		t.Fatal("missing MinGW import lib")
+	}
+	if _, err := os.Stat(filepath.Join(dest, "chunk_your_skills.lib")); !os.IsNotExist(err) {
+		t.Fatal("MSVC static lib should not be copied for Windows Go cgo")
 	}
 }
 

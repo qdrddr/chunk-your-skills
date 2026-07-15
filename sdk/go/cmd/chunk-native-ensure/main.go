@@ -227,13 +227,22 @@ func hasNativeLibs(dir, triplet string) bool {
 	if dir == "" {
 		return false
 	}
+	if isWindowsMSVC(triplet) {
+		if name := mingwImportLibName(triplet); name != "" {
+			if _, err := os.Stat(filepath.Join(dir, name)); err == nil {
+				return true
+			}
+		}
+		if name := importLibName(triplet); name != "" {
+			if _, err := os.Stat(filepath.Join(dir, name)); err == nil {
+				return true
+			}
+		}
+		_, err := os.Stat(filepath.Join(dir, sharedLibName(triplet)))
+		return err == nil
+	}
 	if _, err := os.Stat(filepath.Join(dir, staticLibName(triplet))); err == nil {
 		return true
-	}
-	if name := importLibName(triplet); name != "" {
-		if _, err := os.Stat(filepath.Join(dir, name)); err == nil {
-			return true
-		}
 	}
 	_, err := os.Stat(filepath.Join(dir, sharedLibName(triplet)))
 	return err == nil
@@ -252,15 +261,26 @@ func moduleNativePath(triplet string) string {
 }
 
 func artifactNames(triplet string, staticOnly bool) []string {
+	if isWindowsMSVC(triplet) {
+		names := []string{"chunk_your_skills.h"}
+		if !staticOnly {
+			names = append(names, sharedLibName(triplet))
+		}
+		if name := mingwImportLibName(triplet); name != "" {
+			names = append(names, name)
+		}
+		if staticOnly {
+			names = append(names, importLibName(triplet))
+		}
+		return names
+	}
+
 	names := []string{
 		staticLibName(triplet),
 		"chunk_your_skills.h",
 	}
 	if !staticOnly {
 		names = append(names, sharedLibName(triplet))
-	}
-	if isWindowsMSVC(triplet) {
-		names = append(names, importLibName(triplet))
 	}
 	return names
 }
@@ -480,15 +500,16 @@ func extractTarGz(data []byte, destDir string) error {
 }
 
 func printShellEnv(dest, triplet string) {
-	static := filepath.Join(dest, staticLibName(triplet))
 	var ldflags string
-	switch runtime.GOOS {
-	case "linux":
-		ldflags = static + " -lm -ldl -pthread"
-	case "darwin":
-		ldflags = static + " -framework Security -lpthread"
+	switch {
+	case isWindowsMSVC(triplet):
+		ldflags = filepath.Join(dest, mingwImportLibName(triplet))
+	case runtime.GOOS == "linux":
+		ldflags = filepath.Join(dest, staticLibName(triplet)) + " -lm -ldl -pthread"
+	case runtime.GOOS == "darwin":
+		ldflags = filepath.Join(dest, staticLibName(triplet)) + " -framework Security -lpthread"
 	default:
-		ldflags = static
+		ldflags = filepath.Join(dest, staticLibName(triplet))
 	}
 	fmt.Printf("export CGO_CFLAGS=-I%q\n", dest)
 	fmt.Printf("export CGO_LDFLAGS=%q\n", ldflags)
