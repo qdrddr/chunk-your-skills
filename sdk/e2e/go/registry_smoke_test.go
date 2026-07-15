@@ -3,7 +3,7 @@ package e2esupport_test
 import (
 	"testing"
 
-	chunkyourskills "github.com/qdrddr/chunk-your-skills/sdk/go/chunkyourskills"
+	chunkyourskills "github.com/qdrddr/chunk-your-skills/sdk/go"
 )
 
 func TestCountTokensFromReleaseModule(t *testing.T) {

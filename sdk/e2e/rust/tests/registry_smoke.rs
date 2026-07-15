@@ -31,5 +31,6 @@ fn build_skills_index_from_registry_crate() {
 
 #[test]
 fn count_tokens_smoke() {
-    assert!(count_tokens("hello world") >= 1);
+    let count = count_tokens("hello world").expect("count_tokens");
+    assert!(count >= 1);
 }

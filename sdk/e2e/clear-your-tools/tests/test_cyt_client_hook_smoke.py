@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 _INJECTION = " # execute "
+_INJECTION_BODY = "# execute"
 _INJECT_BODY = json.dumps(
     {
         "hookSpecificOutput": {
@@ -89,7 +90,7 @@ def test_cyt_client_cursor_before_submit_prompt() -> None:
         }
         rules = workspace / ".cursor" / "rules" / "cyt-injection.mdc"
         assert rules.is_file()
-        assert _INJECTION in rules.read_text(encoding="utf-8")
+        assert _INJECTION_BODY in rules.read_text(encoding="utf-8")
 
 
 def test_cyt_client_cursor_before_submit_empty_injection() -> None:

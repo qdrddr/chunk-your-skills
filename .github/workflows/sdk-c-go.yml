@@ -151,7 +151,7 @@ jobs:
           lib_dir="${GITHUB_WORKSPACE}/target/${{ matrix.target }}/release"
           case "${{ matrix.target }}" in
             *-pc-windows-msvc)
-              bash ../scripts/prepare-windows-cgo.sh "$lib_dir" \
+              bash ./scripts/prepare-windows-cgo.sh "$lib_dir" \
                 "${GITHUB_WORKSPACE}/sdk/go/native/${{ matrix.target }}"
               ;;
           esac
@@ -187,7 +187,7 @@ jobs:
           go run ./cmd/chunk-native-ensure
           case "${{ matrix.target }}" in
             *-pc-windows-msvc)
-              bash ../scripts/prepare-windows-cgo.sh "$lib_dir" \
+              bash ./scripts/prepare-windows-cgo.sh "$lib_dir" \
                 "${GITHUB_WORKSPACE}/sdk/go/native/${{ matrix.target }}"
               ;;
           esac
