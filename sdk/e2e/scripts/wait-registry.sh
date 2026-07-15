@@ -4,7 +4,7 @@
 set -euo pipefail
 
 TARGET="${1:-}"
-VERSION="${CYT_RELEASE_VERSION:-}"
+VERSION="${CYT_RELEASE_VERSION:-${CYS_RELEASE_VERSION:-}}"
 if [[ -z "$TARGET" || -z "$VERSION" ]]; then
 	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <crate|pypi-sdk|pypi-app|npm|tag|release-assets>" >&2
 	exit 1

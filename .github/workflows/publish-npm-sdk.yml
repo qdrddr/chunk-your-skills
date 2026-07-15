@@ -43,7 +43,7 @@ jobs:
       needs.resolve-version.outputs.version != ''
     runs-on: ubuntu-latest
     env:
-      CYS_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
+      CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
 

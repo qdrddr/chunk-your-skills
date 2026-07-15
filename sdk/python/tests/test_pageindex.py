@@ -78,7 +78,7 @@ def test_retrieve_by_node_id_after_disk_roundtrip() -> None:
         skills_dir = Path(tmp) / "skills"
         skills_dir.mkdir()
         (skills_dir / "demo.md").write_text(
-            "# Demo\n\nShort.\n\n## Part\n\nLonger section with more words here.",
+            "Short.\n\n# Demo\n\n## Part\n\nLonger section with more words here.",
             encoding="utf-8",
         )
         index = build_skills_index([str(skills_dir)])
@@ -90,7 +90,7 @@ def test_retrieve_by_node_id_after_disk_roundtrip() -> None:
         rows = get_skill_line_content(rebuilt, doc_id, node_id_specs=["1"])
         assert rows
         assert rows[0]["node_id"] == 1
-        assert rows[0]["content"]
+        assert rows[0]["content"] == "Short."
 
 
 def test_repair_skill_nodes() -> None:
