@@ -108,13 +108,14 @@ pub fn home_dir() -> Result<PathBuf, String> {
 ///
 /// Returns an error when home cannot be resolved for shortening.
 pub fn shorten_home_path(path: &str) -> Result<String, String> {
+    let normalized = path.replace('\\', "/");
     let home = home_dir()?;
-    let home_str = home.to_string_lossy();
-    if let Some(rest) = path.strip_prefix(home_str.as_ref()) {
+    let home_str = home.to_string_lossy().replace('\\', "/");
+    if let Some(rest) = normalized.strip_prefix(&home_str) {
         let trimmed = rest.trim_start_matches('/');
         return Ok(format!("~/{trimmed}"));
     }
-    Ok(path.to_string())
+    Ok(normalized)
 }
 
 #[cfg(test)]
@@ -126,7 +127,23 @@ mod tests {
         let home = home_dir()?;
         let path = home.join("skills/foo/SKILL.md");
         let shortened = shorten_home_path(&path.to_string_lossy())?;
-        assert!(shortened.starts_with("~/"));
+        assert_eq!(shortened, "~/skills/foo/SKILL.md");
+        Ok(())
+    }
+
+    #[test]
+    fn shorten_home_path_normalizes_backslashes() -> Result<(), String> {
+        let home = home_dir()?;
+        let path = format!(
+            "{}\\.cysk-skills-home-{}\\example.md",
+            home.to_string_lossy().trim_end_matches(['/', '\\']),
+            std::process::id()
+        );
+        let shortened = shorten_home_path(&path)?;
+        assert_eq!(
+            shortened,
+            format!("~/.cysk-skills-home-{}/example.md", std::process::id())
+        );
         Ok(())
     }
 }

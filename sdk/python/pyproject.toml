@@ -28,6 +28,7 @@ python-source = "src"
 [dependency-groups]
 dev = [
     "maturin>=1.7,<2.0",
+    "pytest>=8.0",
 ]
 
 [tool.basedpyright]

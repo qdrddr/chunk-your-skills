@@ -22,15 +22,16 @@ git push origin "sdk/go/v${version}"
 
 cargo test -p chunk-your-skills
 cargo publish --dry-run
-export CARGO_REGISTRY_TOKEN="$(security find-generic-password -s "cyt" -a "CARGO_REGISTRY_TOKEN" -w)"
+CARGO_REGISTRY_TOKEN="$(security find-generic-password -s "cyt" -a "CARGO_REGISTRY_TOKEN" -w)"
+export CARGO_REGISTRY_TOKEN
 # cargo login
 
 # Verify before publishing
-cargo package --list | grep assets    # should show nothing
-cargo package --list | wc -l          # should be much smaller than 297
-cargo package                         # check compressed size
+cargo package --list | grep assets # should show nothing
+cargo package --list | wc -l       # should be much smaller than 297
+cargo package                      # check compressed size
 
-cargo publish --allow-dirty 
+cargo publish --allow-dirty
 
 # git tag -f chunk_your_skills-rust-v0.1.6
 # git push -f origin chunk_your_skills-rust-v0.1.6

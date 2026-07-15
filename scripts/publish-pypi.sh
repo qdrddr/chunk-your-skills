@@ -20,7 +20,7 @@ git push origin "${tag}"
 git tag "sdk/go/v${version}"
 git push origin "sdk/go/v${version}"
 
-cd sdk/python
+cd sdk/python || exit
 # uv version 1.2.0
 # Build for your current platform
 uv run maturin build --release --out ../../dist

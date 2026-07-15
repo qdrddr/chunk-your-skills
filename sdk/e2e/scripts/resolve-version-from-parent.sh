@@ -35,4 +35,3 @@ fi
 if [[ -n "$VERSION" ]]; then
 	echo "CYT_RELEASE_VERSION=${VERSION}"
 fi
-
