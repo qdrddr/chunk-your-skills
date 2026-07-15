@@ -1,0 +1,56 @@
+# Go SDK git smoke test
+
+Minimal app that consumes `github.com/qdrddr/chunk-your-skills/sdk/go` from git tag **v1.1.0** and checks that:
+
+1. A sparse clone of the release tag provides the Go SDK sources and root Rust crate
+2. C FFI artifacts can be fetched from the matching GitHub Release
+3. The binary links and runs with CGO outside the monorepo
+
+## Run anywhere
+
+Copy this folder to any directory, then:
+
+```bash
+cd go-git-smoke
+chmod +x prepare.sh ensure-ffi.sh run.sh
+./run.sh
+```
+
+## How it works
+
+1. `prepare.sh` sparse-clones `v1.1.0` into `.staging/1.1.0/`
+2. Renders `go.mod` from `go.mod.in` with `replace => .staging/.../sdk/go`
+3. `ensure-ffi.sh` delegates to `sdk/go/cmd/chunk-native-ensure`, which downloads
+   `chunk-your-skills-ffi-<triplet>.tar.gz` from GitHub Releases
+4. `run.sh` links the static archive and runs `CountTokens` / `Version`
+
+## Manual steps
+
+```bash
+export CGO_ENABLED=1
+export CYT_RELEASE_VERSION=1.1.0
+
+./prepare.sh
+STAGING="$(./prepare.sh)"
+./ensure-ffi.sh "$STAGING" "$CYT_RELEASE_VERSION"
+eval "$(./ensure-ffi.sh --print-cgo "$STAGING")"
+
+go mod tidy
+go build -o chunk-go-git-smoke .
+./chunk-go-git-smoke
+```
+
+## Prerequisites
+
+- Go 1.25+ with CGO enabled
+- git, curl, and network access for clone + GitHub Release download
+- C toolchain (clang/gcc; Xcode CLT on macOS)
+
+## Expected output
+
+```text
+chunk-your-skills Go git smoke OK
+  sdk module version: 1.1.0
+  native lib version: 1.1.0
+  count_tokens(hello world): 2
+```

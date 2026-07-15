@@ -1,0 +1,11 @@
+{
+  "name": "chunk-your-skills-registry-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/run.mjs"
+  },
+  "dependencies": {
+    "chunk-your-skills": "@CYT_RELEASE_VERSION@"
+  }
+}

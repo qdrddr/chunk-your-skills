@@ -1,0 +1,32 @@
+@PACKAGE_INIT@
+
+set(CYS_RUST_TARGET "@CYS_RUST_TARGET@")
+set(CYS_LIB_PROFILE "@CYS_LIB_PROFILE@")
+set(CYS_TARGET_DIR "@CYS_TARGET_DIR@")
+set(CYS_INCLUDE_DIR "@CYS_INCLUDE_DIR@")
+
+if(WIN32)
+    set(CYS_SHARED_LIB "${CYS_TARGET_DIR}/${CYS_RUST_TARGET}/${CYS_LIB_PROFILE}/chunk_your_skills.dll")
+    set(CYS_IMPORT_LIB "${CYS_TARGET_DIR}/${CYS_RUST_TARGET}/${CYS_LIB_PROFILE}/chunk_your_skills.dll.lib")
+else()
+    if(APPLE)
+        set(CYS_SHARED_LIB "${CYS_TARGET_DIR}/${CYS_RUST_TARGET}/${CYS_LIB_PROFILE}/libchunk_your_skills.dylib")
+    else()
+        set(CYS_SHARED_LIB "${CYS_TARGET_DIR}/${CYS_RUST_TARGET}/${CYS_LIB_PROFILE}/libchunk_your_skills.so")
+    endif()
+endif()
+
+if(NOT TARGET CYS::chunk_your_skills)
+    add_library(CYS::chunk_your_skills SHARED IMPORTED)
+    set_target_properties(CYS::chunk_your_skills PROPERTIES
+        IMPORTED_LOCATION "${CYS_SHARED_LIB}"
+        INTERFACE_INCLUDE_DIRECTORIES "${CYS_INCLUDE_DIR}"
+    )
+    if(WIN32)
+        set_target_properties(CYS::chunk_your_skills PROPERTIES
+            IMPORTED_IMPLIB "${CYS_IMPORT_LIB}"
+        )
+    endif()
+endif()
+
+check_required_components(CYS)

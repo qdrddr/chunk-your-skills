@@ -1,0 +1,9 @@
+[package]
+name = "chunk-your-skills-registry-e2e"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+chunk-your-skills = { version = "=@CYT_RELEASE_VERSION@" }
+serde_json = "1"
