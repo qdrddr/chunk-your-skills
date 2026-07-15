@@ -6,7 +6,10 @@ use std::path::Path;
 use serde_json::{Value, json};
 
 use super::disk_writer::maybe_enqueue_skills_index;
-use super::hot::{get_merged_document, get_skills_index, store_merged_document, store_skills_index};
+use super::hot::{
+    get_merged_document, get_skills_index, store_merged_document, store_skills_index,
+};
+use super::lock::BuildLock;
 use super::manifest::CacheStatus;
 use super::{CachePolicy, SkillEntryRef, disk_available};
 use crate::pageindex::{
@@ -82,9 +85,15 @@ pub fn materialize_skill_entry(
         ));
     }
 
+    let disk_ok = policy != CachePolicy::ForceMemory && disk_available(entry_dir);
+    let _build_lock = if disk_ok {
+        Some(BuildLock::acquire(entry_dir)?)
+    } else {
+        None
+    };
+
     let index = crate::pageindex::build_page_index_for_file(source, pageindex_config)?;
 
-    let disk_ok = policy != CachePolicy::ForceMemory && disk_available(entry_dir);
     let (disk_backed, cache_status) = if disk_ok {
         maybe_enqueue_skills_index(entry_dir.to_path_buf(), index.clone());
         (true, CacheStatus::Miss)

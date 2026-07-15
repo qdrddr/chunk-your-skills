@@ -19,9 +19,14 @@ mod memory_tests;
 mod test_guard;
 
 pub use config::{MemoryCacheConfig, configure_memory_cache, memory_cache_config};
-pub use hot::{get_merged_document, get_skills_index, reset_hot_caches, store_merged_document, store_skills_index};
+pub use hot::{
+    get_merged_document, get_skills_index, reset_hot_caches, store_merged_document,
+    store_skills_index,
+};
 pub use manifest::CacheStatus;
-pub use materialize::materialize_skill_entry;
+pub use materialize::{
+    ensure_entry_materialized, entry_needs_materialization, materialize_skill_entry,
+};
 #[cfg(any(feature = "ffi", feature = "python", feature = "node"))]
 pub(crate) use skills_registry::parse_skill_sources;
 pub use skills_registry::{SkillEntryRef, ensure_skills_registry};

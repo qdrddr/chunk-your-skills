@@ -48,7 +48,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             node_id,
             output,
             keep_all_headers,
-        } => run_recompose(&catalog, &doc_id, &node_id, output.as_deref(), keep_all_headers)?,
+        } => run_recompose(
+            &catalog,
+            &doc_id,
+            &node_id,
+            output.as_deref(),
+            keep_all_headers,
+        )?,
     }
     Ok(())
 }
@@ -62,7 +68,9 @@ fn run_decompose(skill: &Path, output: &Path) -> Result<(), Box<dyn std::error::
     builder.build_from_file(skill, &PageIndexConfig::default())?;
     builder.write_catalog()?;
 
-    let index = builder.index().ok_or("internal error: missing skills index")?;
+    let index = builder
+        .index()
+        .ok_or("internal error: missing skills index")?;
     let doc_id = index
         .documents
         .keys()
@@ -88,14 +96,8 @@ fn run_recompose(
     let node_id_specs: Vec<&str> = node_ids.iter().map(String::as_str).collect();
     let opts = ReconstructOptions { keep_all_headers };
 
-    let reconstructed = write_reconstructed_skill(
-        catalog,
-        &index,
-        doc_id,
-        &[],
-        &node_id_specs,
-        &opts,
-    )?;
+    let reconstructed =
+        write_reconstructed_skill(catalog, &index, doc_id, &[], &node_id_specs, &opts)?;
 
     if let Some(out) = output {
         if let Some(parent) = out.parent() {

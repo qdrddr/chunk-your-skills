@@ -2,13 +2,11 @@
 
 use std::path::PathBuf;
 
-use crate::cache::{configure_memory_cache, CachePolicy, CacheStatus};
+use crate::cache::{CachePolicy, CacheStatus, configure_memory_cache};
 use crate::ffi::error::CYT_ERR_NULL_PTR;
-use crate::ffi::json_util::{
-    c_str_to_str, json_array_or_empty, parse_json_cstr, run_ffi, write_json_out,
-};
+use crate::ffi::json_util::{c_str_to_str, parse_json_cstr, run_ffi, write_json_out};
 use crate::pageindex::PageIndexConfig;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::os::raw::{c_char, c_int};
 
 fn cache_policy_from_str(raw: Option<&str>) -> CachePolicy {

@@ -101,9 +101,9 @@ repos:
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2
     hooks:
-      - id: codespell # See pyproject.toml for args
-        additional_dependencies:
-          - tomli
+      - id: codespell # See typos.toml for allowed words
+        args: ["-L", "fallow,Fallow,Bui"]
+        exclude: ^(package-lock\.json|sdk/typescript/package-lock\.json)$
   - repo: https://github.com/crate-ci/committed
     rev: v1.1.11
     hooks:
@@ -272,16 +272,16 @@ repos:
             "--frozen",
             "--quiet",
             "--project",
-            "app",
-            "--output-file=requirements.txt",
+            "sdk/python",
+            "--output-file=sdk/python/requirements.txt",
           ]
-        files: pyproject.toml
+        files: sdk/python/pyproject.toml
       - id: uv-lock
-        args: ["--project", "."]
-        files: pyproject.toml
+        args: ["--project", "sdk/python"]
+        files: sdk/python/pyproject.toml
       - id: uv-sync
-        args: ["--project", ".", "--locked", "--all-packages"]
-        files: pyproject.toml
+        args: ["--project", "sdk/python", "--locked"]
+        files: sdk/python/pyproject.toml
         additional_dependencies: []
 
   - repo: https://github.com/asottile/pyupgrade
@@ -362,7 +362,7 @@ repos:
         entry: bash scripts/prek-hook.sh
         args:
           [
-            "source .venv/bin/activate && rtk uv run ty check src/ --project . --output-format concise",
+            "cd sdk/python && source .venv/bin/activate && rtk uv run ty check src --output-format concise",
           ]
         language: system
         types: [python]
@@ -412,11 +412,11 @@ repos:
         entry: bash scripts/prek-hook.sh
         args:
           [
-            'cd "$(git rev-parse --show-toplevel)" && uv run python scripts/check_agent_imports.py',
+            'cd "$(git rev-parse --show-toplevel)/sdk/python" && uv run python ../../scripts/check_agent_imports.py',
           ]
         pass_filenames: false
         language: system
-        files: ^(src/cyt/agents/.*\.py|src/cyt/skills/.*\.py|src/cyt/proxy/reverse\.py|scripts/check_agent_imports\.py)$
+        files: ^(sdk/python/.*\.py|scripts/check_agent_imports\.py)$
       - id: pytest
         name: pytest
         entry: bash scripts/prek-hook.sh
@@ -433,7 +433,9 @@ repos:
         name: basedpyright
         entry: bash scripts/prek-hook.sh
         args:
-          ["source .venv/bin/activate && rtk basedpyright src sdk/python/src"]
+          [
+            "cd sdk/python && source .venv/bin/activate && rtk basedpyright --project . src",
+          ]
         language: system
         pass_filenames: false
         files: '^(src/.*\.py|sdk/python/.*\.py)$'
@@ -666,4 +668,3 @@ repos:
         verbose: true
         pass_filenames: false
   # Insert new entries above the `suggestion` entry
-

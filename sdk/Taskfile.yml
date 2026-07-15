@@ -96,7 +96,7 @@ tasks:
     desc: Fallow audit report (markdown, paths shortened)
     cmds:
       - task: _fallow-audit
-        vars: { WORKDIR: "{{.UI_DIR}}" }
+        vars: { WORKDIR: "{{.TYPESCRIPT_DIR}}" }
 
   fallow-health:
     cmds:
@@ -241,4 +241,3 @@ tasks:
       - task: fallow-audit
       - task: fallow-health
       - task: fallow-auto
-

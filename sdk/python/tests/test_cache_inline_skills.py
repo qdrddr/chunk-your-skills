@@ -24,8 +24,6 @@ def test_ensure_skills_registry_accepts_inline_content() -> None:
             ],
             str(catalog_root),
             default_page_index_config().to_dict(),
-            "bm25",
-            "test-hash",
             policy="force_memory",
         )
         assert len(refs) == 1

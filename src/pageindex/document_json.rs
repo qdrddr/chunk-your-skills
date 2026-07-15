@@ -374,7 +374,7 @@ mod tests {
             &MdIndexResult {
                 doc_name: "skill".to_string(),
                 line_count: 4,
-                structure: structure.clone(),
+                structure,
             },
             &PageIndexConfig::default(),
             Some("name: demo".to_string()),
@@ -401,4 +401,3 @@ mod tests {
         Ok(())
     }
 }
-

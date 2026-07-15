@@ -296,10 +296,7 @@ export function loadSkillsIndexFromEntry(
   entryDir: string,
   docId: string,
 ): SkillsIndexDict {
-  return loadSkillsIndexFromEntryNative(
-    entryDir,
-    docId,
-  ) as SkillsIndexDict;
+  return loadSkillsIndexFromEntryNative(entryDir, docId) as SkillsIndexDict;
 }
 
 export function loadMergedSkillDocumentJson(

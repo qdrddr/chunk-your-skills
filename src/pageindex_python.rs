@@ -1,10 +1,12 @@
+#![allow(clippy::needless_pass_by_value)] // PyO3 `Bound<'_, PyAny>` handlers follow extension conventions.
+
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, ReconstructOptions, SkillsIndex, build_page_index_for_file,
     build_page_index_only, build_skills_index, finalize_entry_metadata,
     get_content_retrieve_result, get_document, get_document_structure, get_line_content,
     get_line_content_from_spec, load_merged_document_json, md_to_tree, page_index_valid,
-    parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes,
-    spec_refs::OwnedSpecRefs, token_count_from_decomposed_frontmatter, update_document_source_path,
+    parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes, spec_refs::OwnedSpecRefs,
+    token_count_from_decomposed_frontmatter, update_document_source_path,
     write_reconstructed_skill,
 };
 use crate::skills_builder::SkillsBuilder;
@@ -31,7 +33,7 @@ fn skills_index_to_py(py: Python<'_>, index: &SkillsIndex) -> PyResult<Py<PyAny>
 
 fn page_index_config_from_py(config: Option<Bound<'_, PyAny>>) -> PyResult<PageIndexConfig> {
     match config {
-        Some(obj) => Ok(PageIndexConfig::from_value(&py_to_value(obj)?)),
+        Some(obj) => Ok(PageIndexConfig::from_value(&py_to_value(&obj)?)),
         None => Ok(PageIndexConfig::default()),
     }
 }
@@ -51,7 +53,7 @@ fn build_skills_index_py(
 
 #[pyfunction(name = "write_skills_index")]
 fn write_skills_index_py(index: Bound<'_, PyAny>, output_dir: String) -> PyResult<()> {
-    let val = py_to_value(index)?;
+    let val = py_to_value(&index)?;
     let mut skills = SkillsIndex::default();
     if let Some(docs) = val.get("documents").and_then(|v| v.as_object()) {
         for (doc_id, doc_val) in docs {
@@ -159,7 +161,7 @@ fn finalize_skill_document_json_py(
     let metadata = EntryMetadata {
         source_path: source_path.to_string(),
         pipeline: pipeline.to_string(),
-        index_params: py_to_value(index_params)?,
+        index_params: py_to_value(&index_params)?,
     };
     let value = finalize_entry_metadata(PathBuf::from(entry_dir).as_path(), &metadata)
         .map_err(PyErr::new::<pyo3::exceptions::PyValueError, _>)?;
@@ -208,7 +210,7 @@ fn md_to_tree_py(
 fn documents_from_py(
     documents: Bound<'_, PyAny>,
 ) -> PyResult<std::collections::HashMap<String, crate::pageindex::SkillDocument>> {
-    let val = py_to_value(documents)?;
+    let val = py_to_value(&documents)?;
     let mut out = std::collections::HashMap::new();
     let obj = val.as_object().ok_or_else(|| {
         PyErr::new::<pyo3::exceptions::PyValueError, _>("documents must be an object")
@@ -223,7 +225,7 @@ fn documents_from_py(
 }
 
 fn skills_index_from_py(index_or_docs: Bound<'_, PyAny>) -> PyResult<SkillsIndex> {
-    let val = py_to_value(index_or_docs)?;
+    let val = py_to_value(&index_or_docs)?;
     if val.get("documents").is_some() || val.get("files").is_some() {
         let mut skills = SkillsIndex::default();
         if let Some(docs) = val.get("documents").and_then(|v| v.as_object()) {
@@ -314,7 +316,7 @@ fn reconstruct_options_from_py(opts: Option<Bound<'_, PyAny>>) -> PyResult<Recon
             keep_all_headers: extracted.keep_all_headers,
         });
     }
-    let val = py_to_value(obj)?;
+    let val = py_to_value(&obj)?;
     Ok(ReconstructOptions {
         keep_all_headers: val
             .get("keep_all_headers")
@@ -419,12 +421,7 @@ fn get_skill_line_content_py(
     let specs = OwnedSpecRefs::new(line_num_specs, node_id_specs);
     value_to_py(
         py,
-        &get_line_content(
-            &index,
-            doc_id,
-            &specs.line_refs(),
-            &specs.node_refs(),
-        ),
+        &get_line_content(&index, doc_id, &specs.line_refs(), &specs.node_refs()),
     )
 }
 

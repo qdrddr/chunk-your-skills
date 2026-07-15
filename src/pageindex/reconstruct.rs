@@ -6,9 +6,7 @@ use serde_json::{Value, json};
 
 use super::node_id::node_id_from_value;
 use super::parse::extract_skill_prefix;
-use super::retrieve::{
-    merge_line_num_specs, merge_node_id_specs, strip_decomposed_frontmatter,
-};
+use super::retrieve::{merge_line_num_specs, merge_node_id_specs, strip_decomposed_frontmatter};
 use super::tree::{NODE_ID_PREAMBLE, is_frontmatter_node, is_preamble_node, structure_to_list};
 use super::types::{SkillDocument, SkillsIndex, node_md_rel};
 
@@ -87,16 +85,11 @@ pub fn get_content_retrieve_result(
         return json!({ "error": format!("Document {doc_id} not found") });
     };
 
-    let reconstructed = match reconstruct_skill_markdown(
-        index,
-        doc_id,
-        line_num_specs,
-        node_id_specs,
-        opts,
-    ) {
-        Ok(result) => result,
-        Err(error) => return json!({ "error": error }),
-    };
+    let reconstructed =
+        match reconstruct_skill_markdown(index, doc_id, line_num_specs, node_id_specs, opts) {
+            Ok(result) => result,
+            Err(error) => return json!({ "error": error }),
+        };
 
     let kept: HashSet<u32> = reconstructed.node_ids.iter().copied().collect();
     let pruned = prune_structure(&doc.structure, &kept);
@@ -139,7 +132,13 @@ pub fn reconstruct_skill_markdown(
     } else {
         &pruned
     };
-    let markdown = assemble_markdown(index, doc, structure_for_assembly, &kept, opts.keep_all_headers);
+    let markdown = assemble_markdown(
+        index,
+        doc,
+        structure_for_assembly,
+        &kept,
+        opts.keep_all_headers,
+    );
 
     let mut matched_node_ids: Vec<u32> = matched.into_iter().collect();
     matched_node_ids.sort_unstable();
@@ -167,13 +166,7 @@ pub fn write_reconstructed_skill(
     node_id_specs: &[&str],
     opts: &ReconstructOptions,
 ) -> Result<PathBuf, String> {
-    let result = reconstruct_skill_markdown(
-        index,
-        doc_id,
-        line_num_specs,
-        node_id_specs,
-        opts,
-    )?;
+    let result = reconstruct_skill_markdown(index, doc_id, line_num_specs, node_id_specs, opts)?;
     let output_path = catalog_dir.join(RETRIEVE_DIR).join(&result.output_rel_path);
     if let Some(parent) = output_path.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -236,11 +229,7 @@ fn node_matches(criteria: &MatchCriteria, line_num: u32, node_id: u32) -> bool {
         || (criteria.match_by_node && criteria.node_set.contains(&node_id))
 }
 
-fn build_restored_nodes(
-    index: &SkillsIndex,
-    doc_id: &str,
-    pruned_structure: &Value,
-) -> Vec<Value> {
+fn build_restored_nodes(index: &SkillsIndex, doc_id: &str, pruned_structure: &Value) -> Vec<Value> {
     let mut nodes = Vec::new();
     for node in structure_to_list(pruned_structure) {
         let Some(obj) = node.as_object() else {
@@ -802,4 +791,3 @@ mod tests {
         assert_eq!(retrieve_output_rel_path(&doc), "lean-ctx/SKILL.md");
     }
 }
-

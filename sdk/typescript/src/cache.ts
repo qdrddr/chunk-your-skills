@@ -33,16 +33,12 @@ export function ensureSkillsRegistry(
   sourcePaths: SkillSourceInput[],
   catalogRoot: string,
   pageindexConfig: Record<string, unknown> | null | undefined,
-  pipeline: string,
-  indexParamsHash: string,
   policy?: CachePolicy,
 ): SkillEntryRef[] {
   return ensureSkillsRegistryNative(
     sourcePaths,
     catalogRoot,
     pageindexConfig ?? undefined,
-    pipeline,
-    indexParamsHash,
     policy,
   ) as SkillEntryRef[];
 }

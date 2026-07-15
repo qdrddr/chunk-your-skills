@@ -93,4 +93,3 @@ func validateTriplet(triplet string) error {
 	}
 	return fmt.Errorf("unsupported triplet: %s", triplet)
 }
-

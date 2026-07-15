@@ -1,6 +1,6 @@
 [project]
 name = "chunk-your-skills"
-version = "1.1.0"
+version = "1.0.0"
 description = "Python SDK for chunk-your-skills — SKILL.md pageindex and skinny-skill recomposition"
 requires-python = ">=3.13,<4.0"
 readme = "README.md"
@@ -30,5 +30,10 @@ dev = [
     "maturin>=1.7,<2.0",
 ]
 
-[tool.uv]
-default-groups = ["dev"]
+[tool.basedpyright]
+typeCheckingMode = "basic"
+reportExplicitAny = "none"
+reportUnknownMemberType = "none"
+reportUnknownVariableType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownParameterType = "none"

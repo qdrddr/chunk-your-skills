@@ -62,4 +62,3 @@ derive_neq = false
 "CytCatalogBuilder" = "CytCatalogBuilder"
 "CytDecomposedCatalog" = "CytDecomposedCatalog"
 "CytSkillsBuilder" = "CytSkillsBuilder"
-

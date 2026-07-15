@@ -1,8 +1,7 @@
 use chunk_your_skills::{
-    PageIndexConfig, ReconstructOptions, SkillsBuilder, SkillsIndex, build_skills_index,
-    get_skill_document, get_skill_line_content_from_spec, get_skill_structure,
-    load_skills_index_from_dir, reconstruct_skill_markdown, repair_skill_nodes,
-    skills_index_from_decomposed_dir,
+    PageIndexConfig, ReconstructOptions, SkillsBuilder, build_skills_index, get_skill_document,
+    get_skill_line_content_from_spec, get_skill_structure, load_skills_index_from_dir,
+    reconstruct_skill_markdown, repair_skill_nodes, skills_index_from_decomposed_dir,
 };
 use std::fs;
 use std::path::Path;
@@ -54,10 +53,12 @@ fn write_reconstruct_and_retrieve_via_cli_flow() -> Result<(), String> {
 
     assert!(catalog.join("nodes/page_index.json").is_file());
     assert!(
-        index
-            .files
-            .keys()
-            .any(|k| k.starts_with("nodes/") && k.ends_with(".md")),
+        index.files.keys().any(|k| {
+            k.starts_with("nodes/")
+                && std::path::Path::new(k)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+        }),
         "expected node markdown files"
     );
 
@@ -120,7 +121,12 @@ fn node_files_emitted_for_each_section() -> Result<(), String> {
     let index = build_skills_index(&[skills_dir], &PageIndexConfig::default())?;
     assert_eq!(index.documents.len(), 1);
     assert!(
-        index.files.keys().any(|k| k.starts_with("nodes/") && k.ends_with(".md")),
+        index.files.keys().any(|k| {
+            k.starts_with("nodes/")
+                && std::path::Path::new(k)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+        }),
         "expected node markdown files"
     );
     assert!(
@@ -140,13 +146,8 @@ fn reconstruct_by_node_id() -> Result<(), String> {
     let index = build_skills_index(&[skills_dir], &PageIndexConfig::default())?;
     let doc_id = "create-hook";
 
-    let result = reconstruct_skill_markdown(
-        &index,
-        doc_id,
-        &[],
-        &["3"],
-        &ReconstructOptions::default(),
-    )?;
+    let result =
+        reconstruct_skill_markdown(&index, doc_id, &[], &["3"], &ReconstructOptions::default())?;
     assert!(result.markdown.contains("## Usage"));
     assert!(!result.markdown.contains("## API"));
 

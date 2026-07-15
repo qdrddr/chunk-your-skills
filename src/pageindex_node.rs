@@ -6,8 +6,8 @@ use crate::pageindex::{
     build_page_index_for_file, build_page_index_only, build_skills_index,
     get_content_retrieve_result, get_document, get_document_structure, get_line_content,
     get_line_content_from_spec, md_to_tree, page_index_valid, parse_node_ids,
-    reconstruct_skill_markdown, repair_skill_nodes,
-    spec_refs::OwnedSpecRefs, token_count_from_decomposed_frontmatter, write_reconstructed_skill,
+    reconstruct_skill_markdown, repair_skill_nodes, spec_refs::OwnedSpecRefs,
+    token_count_from_decomposed_frontmatter, write_reconstructed_skill,
 };
 use crate::skills_builder::SkillsBuilder;
 use crate::skills_io::{
@@ -178,11 +178,8 @@ pub fn load_skills_index_from_entry_napi(
     doc_id: String,
 ) -> Result<HashMap<String, Value>> {
     let doc_id = doc_id.into_boxed_str();
-    let index = load_skills_index_from_entry(
-        PathBuf::from(entry_dir).as_path(),
-        doc_id.as_ref(),
-    )
-    .map_err(Error::from_reason)?;
+    let index = load_skills_index_from_entry(PathBuf::from(entry_dir).as_path(), doc_id.as_ref())
+        .map_err(Error::from_reason)?;
     Ok(skills_index_to_napi(&index))
 }
 
@@ -190,16 +187,10 @@ pub fn load_skills_index_from_entry_napi(
 ///
 /// Returns an error when the merged document JSON cannot be loaded.
 #[napi(js_name = "loadMergedSkillDocumentJson")]
-pub fn load_merged_skill_document_json_napi(
-    entry_dir: String,
-    doc_id: String,
-) -> Result<Value> {
+pub fn load_merged_skill_document_json_napi(entry_dir: String, doc_id: String) -> Result<Value> {
     let doc_id = doc_id.into_boxed_str();
-    load_merged_document_json(
-        PathBuf::from(entry_dir).as_path(),
-        doc_id.as_ref(),
-    )
-    .map_err(Error::from_reason)
+    load_merged_document_json(PathBuf::from(entry_dir).as_path(), doc_id.as_ref())
+        .map_err(Error::from_reason)
 }
 
 /// # Errors

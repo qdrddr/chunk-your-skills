@@ -1,6 +1,8 @@
 # Migration from clear-your-tools / cyt-indexer-sdk
 
-This repository was split from [clear-your-tools](https://github.com/qdrddr/clear-your-tools). The proxy application (`cyt` CLI, `src/cyt/`, hooks, pruners) remains in clear-your-tools. **chunk-your-skills** is the skills-only SDK and CLI.
+This repository was split from [clear-your-tools](https://github.com/qdrddr/clear-your-tools).
+The proxy application (`cyt` CLI, `src/cyt/`, hooks, pruners) remains in clear-your-tools.
+**chunk-your-skills** is the skills-only SDK and CLI.
 
 ## Package renames
 

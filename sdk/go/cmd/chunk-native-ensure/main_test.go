@@ -183,4 +183,3 @@ func TestCopyArtifactsStaticOnly(t *testing.T) {
 		t.Fatal("shared lib should be omitted with staticOnly")
 	}
 }
-

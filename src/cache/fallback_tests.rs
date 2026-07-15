@@ -4,8 +4,8 @@
 
 use std::path::PathBuf;
 
-use crate::cache::{disk_available, CachePolicy, CacheStatus};
 use crate::cache::test_guard::CacheConfigTestGuard;
+use crate::cache::{CachePolicy, CacheStatus, disk_available};
 
 fn unavailable_disk_cache_path() -> PathBuf {
     if cfg!(windows) {
@@ -22,7 +22,8 @@ fn disk_available_false_for_missing_home_subpath() {
 
 #[test]
 fn force_memory_env_disables_disk() {
-    let _guard = CacheConfigTestGuard::with_patch(&serde_json::json!({ "async_disk_writes": false }));
+    let _guard =
+        CacheConfigTestGuard::with_patch(&serde_json::json!({ "async_disk_writes": false }));
     unsafe {
         std::env::set_var("CYSK_CACHE_FORCE_MEMORY", "1");
     }
@@ -37,7 +38,8 @@ fn force_memory_env_disables_disk() {
 
 #[test]
 fn force_memory_policy_skips_disk() {
-    let _guard = CacheConfigTestGuard::with_patch(&serde_json::json!({ "async_disk_writes": false }));
+    let _guard =
+        CacheConfigTestGuard::with_patch(&serde_json::json!({ "async_disk_writes": false }));
     let tmp = std::env::temp_dir().join(format!("cysk-policy-{}", std::process::id()));
     let skills = tmp.join("skills");
     let catalog = tmp.join("catalog");

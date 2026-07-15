@@ -150,4 +150,3 @@ else
 	done
 	echo "Registry E2E smoke passed for: ${TARGETS[*]}"
 fi
-

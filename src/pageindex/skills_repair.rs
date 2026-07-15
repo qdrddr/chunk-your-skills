@@ -50,7 +50,7 @@ fn node_file_exists(entry_dir: &Path, node_id: u32) -> bool {
 }
 
 fn attach_missing_nodes_to_structure(
-    structure: &mut serde_json::Value,
+    structure: &serde_json::Value,
     config: &PageIndexConfig,
     index: &mut SkillsIndex,
     doc_id: &str,
@@ -113,13 +113,8 @@ pub fn repair_skill_nodes(
     let mut structure = doc.structure.clone();
 
     populate_structure_text_from_node_files(&mut structure, &index, doc_id);
-    let changed = attach_missing_nodes_to_structure(
-        &mut structure,
-        config,
-        &mut index,
-        doc_id,
-        entry_dir,
-    )?;
+    let changed =
+        attach_missing_nodes_to_structure(&structure, config, &mut index, doc_id, entry_dir)?;
 
     if !changed {
         return Ok(());

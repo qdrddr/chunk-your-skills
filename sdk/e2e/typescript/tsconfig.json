@@ -8,7 +8,7 @@
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
-    "baseUrl": ".",
+    "types": ["node"],
     "paths": {
       "chunk-your-skills": ["../../typescript/src/index.ts"]
     },
@@ -19,4 +19,3 @@
   },
   "include": ["test/**/*.mjs"]
 }
-

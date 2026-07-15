@@ -13,12 +13,10 @@ def ensure_skills_registry(
     source_paths: list[str] | list[dict[str, str]],
     catalog_root: str,
     pageindex_config: dict[str, Any] | None,
-    pipeline: str,
-    index_params_hash: str,
     *,
     policy: CachePolicy = "auto",
 ) -> list[dict[str, Any]]:
-    """Ensure page index (+ BM25 chunks when pipeline is bm25) for skill sources.
+    """Ensure page index entries for skill sources.
 
     Each source may be a filesystem path string or a dict with
     ``path``, ``content``, and optional ``content_sha256`` for in-memory client skills.
@@ -27,8 +25,6 @@ def ensure_skills_registry(
         source_paths,
         catalog_root,
         pageindex_config,
-        pipeline,
-        index_params_hash,
         policy,
     )
     return [dict(ref) for ref in refs]

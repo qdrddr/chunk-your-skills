@@ -17,36 +17,19 @@ int main(void) {
     }
     cyt_example_free(tree);
 
-    char *chunk_ids_out = NULL;
-    if (!cyt_example_ok(cyt_parse_skill_chunk_ids("8-10", &chunk_ids_out),
-                        "cyt_parse_skill_chunk_ids")) {
+    char *node_ids_out = NULL;
+    if (!cyt_example_ok(cyt_parse_skill_node_ids("8-10", &node_ids_out),
+                        "cyt_parse_skill_node_ids")) {
         return 1;
     }
-    char *chunk_ids = cyt_example_take(&chunk_ids_out);
-    if (chunk_ids == NULL || strstr(chunk_ids, "8") == NULL) {
-        fprintf(stderr, "unexpected chunk id list\n");
-        cyt_example_free(chunk_ids);
+    char *node_ids = cyt_example_take(&node_ids_out);
+    if (node_ids == NULL || strstr(node_ids, "8") == NULL) {
+        fprintf(stderr, "unexpected node id list\n");
+        cyt_example_free(node_ids);
         return 1;
     }
-    cyt_example_free(chunk_ids);
+    cyt_example_free(node_ids);
 
-    char *bm25_out = NULL;
-    if (!cyt_example_ok(cyt_bm25_cohesion_default_config(&bm25_out),
-                        "cyt_bm25_cohesion_default_config")) {
-        return 1;
-    }
-    char *bm25_cfg = cyt_example_take(&bm25_out);
-
-    char *chunks_out = NULL;
-    const char *text = "Alpha one two three. Beta finance market stocks.";
-    if (!cyt_example_ok(cyt_bm25_cohesion_chunk(text, bm25_cfg, &chunks_out),
-                        "cyt_bm25_cohesion_chunk")) {
-        cyt_example_free(bm25_cfg);
-        return 1;
-    }
-    cyt_example_free(bm25_cfg);
-    cyt_example_free(cyt_example_take(&chunks_out));
-
-    printf("skills: pageindex + bm25 ok\n");
+    printf("skills: pageindex ok\n");
     return 0;
 }

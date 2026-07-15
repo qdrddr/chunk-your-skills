@@ -29,9 +29,8 @@ impl DiskWriter {
             .name("cysk-cache-disk-writer".into())
             .spawn(move || {
                 while let Ok(job) = receiver.recv() {
-                    if let DiskWriteJob::SkillsIndex { entry_dir, index } = job {
-                        let _ = write_skills_index(&index, &entry_dir);
-                    }
+                    let DiskWriteJob::SkillsIndex { entry_dir, index } = job;
+                    let _ = write_skills_index(&index, &entry_dir);
                 }
             })
             .is_err()

@@ -1,8 +1,11 @@
 # Chunk Your Skills
 
-Rust-first library for decomposing agent `SKILL.md` files into page-indexed nodes and recomposing **skinny skills** — only the sections you select.
+Rust-first library for decomposing agent `SKILL.md` files into page-indexed nodes and recomposing
+**skinny skills** — only the sections you select.
 
-This repository is the **chunk-your-skills** SDK monorepo. The former **clear-your-tools** proxy application layer has been removed; use [clear-your-tools](https://github.com/qdrddr/clear-your-tools) for the MCP tool-gating proxy.
+This repository is the **chunk-your-skills** SDK monorepo. The former **clear-your-tools** proxy
+application layer has been removed; use [clear-your-tools](https://github.com/qdrddr/clear-your-tools)
+for the MCP tool-gating proxy.
 
 ## What it does
 

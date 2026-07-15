@@ -122,4 +122,3 @@ release-assets)
 	exit 1
 	;;
 esac
-

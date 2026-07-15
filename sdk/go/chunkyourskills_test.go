@@ -3,7 +3,7 @@ package chunkyourskills_test
 import (
 	"testing"
 
-	"github.com/qdrddr/chunk-your-skills/sdk/go/chunkyourskills"
+	chunkyourskills "github.com/qdrddr/chunk-your-skills/sdk/go"
 )
 
 func TestMdToTreeSmoke(t *testing.T) {

@@ -1,7 +1,7 @@
 //! Path configuration FFI exports.
 
 use crate::ffi::error::{CYT_ERR_NULL_PTR, set_error};
-use crate::ffi::json_util::{c_str_to_str, run_ffi, write_optional_string_out, write_string_result};
+use crate::ffi::json_util::{c_str_to_str, run_ffi, write_optional_string_out};
 use crate::paths::{self, PathConfig};
 use std::os::raw::{c_char, c_int};
 

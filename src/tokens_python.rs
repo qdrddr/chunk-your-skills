@@ -1,3 +1,5 @@
+#![allow(clippy::needless_pass_by_value)] // PyO3 `Bound<'_, PyAny>` handlers follow extension conventions.
+
 use crate::tiktoken::{self, AllowedSpecial};
 use pyo3::prelude::*;
 
@@ -9,7 +11,7 @@ fn count_tokens_py(py: Python<'_>, text: &str) -> PyResult<usize> {
 
 #[pyfunction(name = "count_json_tokens")]
 fn count_json_tokens_py(obj: Bound<'_, PyAny>) -> PyResult<usize> {
-    let value = super::py_to_value(obj)?;
+    let value = super::py_to_value(&obj)?;
     tiktoken::count_json_tokens(&value).map_err(PyErr::new::<pyo3::exceptions::PyValueError, _>)
 }
 

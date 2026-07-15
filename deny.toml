@@ -30,4 +30,3 @@ wildcards = "allow"
 [sources]
 unknown-registry = "warn"
 unknown-git = "warn"
-

@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use serde_json::Value;
 use std::sync::{OnceLock, RwLock};
 
 /// SDK runtime path defaults; override from the host app via `configure`.
@@ -99,16 +98,7 @@ pub fn expand_home_path(path: &Path) -> Result<PathBuf, String> {
 pub fn home_dir() -> Result<PathBuf, String> {
     std::env::var_os("HOME")
         .map(PathBuf::from)
-        .or_else(|| {
-            #[cfg(windows)]
-            {
-                std::env::var_os("USERPROFILE").map(PathBuf::from)
-            }
-            #[cfg(not(windows))]
-            {
-                None
-            }
-        })
+        .or_else(|| std::env::var_os("USERPROFILE").map(PathBuf::from))
         .ok_or_else(|| "could not resolve home directory".to_string())
 }
 

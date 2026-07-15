@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Run fallow checks the same way as: cd ui && task all-fallow
+# Run fallow checks via sdk/Taskfile.yml (TypeScript + e2e TypeScript).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="${ROOT}/node_modules/.bin:${PATH}"
 
-cd "${ROOT}/ui"
+cd "${ROOT}/sdk"
 task all-fallow

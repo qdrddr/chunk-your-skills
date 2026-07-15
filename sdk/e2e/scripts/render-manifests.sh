@@ -129,4 +129,3 @@ render_python_pyproject
 render_typescript_package
 render_clear_your_tools_pyproject
 render_go_mod "${ROOT}/go/go.mod.in" "${ROOT}/go/go.mod"
-

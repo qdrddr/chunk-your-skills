@@ -79,7 +79,10 @@ pub fn load_skills_index_from_entry(entry_dir: &Path, doc_id: &str) -> Result<Sk
     Ok(index)
 }
 
-fn load_skills_index_from_entry_impl(entry_dir: &Path, doc_id: &str) -> Result<SkillsIndex, String> {
+fn load_skills_index_from_entry_impl(
+    entry_dir: &Path,
+    doc_id: &str,
+) -> Result<SkillsIndex, String> {
     let mut index = SkillsIndex::default();
     load_entry_files_into_index(entry_dir, &mut index)?;
 

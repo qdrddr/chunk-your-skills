@@ -14,10 +14,10 @@ use crate::pageindex::document_json::{
 use crate::pageindex::spec_refs::OwnedSpecRefs;
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, ReconstructOptions, SkillDocument, SkillsIndex,
-    build_page_index_only, build_skills_index,
-    get_content_retrieve_result, get_document, get_document_structure, get_line_content,
-    get_line_content_from_spec, md_to_tree, page_index_valid, parse_node_ids,
-    reconstruct_skill_markdown, repair_skill_nodes, write_reconstructed_skill,
+    build_page_index_only, build_skills_index, get_content_retrieve_result, get_document,
+    get_document_structure, get_line_content, get_line_content_from_spec, md_to_tree,
+    page_index_valid, parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes,
+    write_reconstructed_skill,
 };
 use crate::skills_builder::SkillsBuilder;
 use crate::skills_io::{
@@ -384,17 +384,12 @@ pub unsafe extern "C" fn cyt_reconstruct_skill_markdown(
         let node_specs = string_specs_from_json(node_id_specs_json, "node_id_specs_json")?;
         let specs = OwnedSpecRefs::new(line_specs, node_specs);
         let opts = reconstruct_options_from_json(options_json)?;
-        let result = reconstruct_skill_markdown(
-            &index,
-            doc,
-            &specs.line_refs(),
-            &specs.node_refs(),
-            &opts,
-        )
-        .map_err(|e| {
-            set_error(&e);
-            CYT_ERR_INVALID_ARG
-        })?;
+        let result =
+            reconstruct_skill_markdown(&index, doc, &specs.line_refs(), &specs.node_refs(), &opts)
+                .map_err(|e| {
+                    set_error(&e);
+                    CYT_ERR_INVALID_ARG
+                })?;
         unsafe {
             write_json_out(
                 &json!({
@@ -471,12 +466,7 @@ pub unsafe extern "C" fn cyt_get_skill_line_content(
         let specs = OwnedSpecRefs::new(line_specs, node_specs);
         unsafe {
             write_json_out(
-                &get_line_content(
-                    &index,
-                    doc,
-                    &specs.line_refs(),
-                    &specs.node_refs(),
-                ),
+                &get_line_content(&index, doc, &specs.line_refs(), &specs.node_refs()),
                 out,
             )?;
         }
@@ -731,12 +721,11 @@ pub unsafe extern "C" fn cyt_load_skills_index_from_entry(
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let doc = c_str_to_str(doc_id, "doc_id")?;
-        let index = load_skills_index_from_entry(PathBuf::from(entry).as_path(), doc).map_err(
-            |e| {
+        let index =
+            load_skills_index_from_entry(PathBuf::from(entry).as_path(), doc).map_err(|e| {
                 set_error(&e);
                 CYT_ERR_IO
-            },
-        )?;
+            })?;
         unsafe { write_json_out(&skills_index_to_json(&index), out)? };
         Ok(())
     })
@@ -754,10 +743,11 @@ pub unsafe extern "C" fn cyt_load_merged_skill_document_json(
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let doc = c_str_to_str(doc_id, "doc_id")?;
-        let value = load_merged_document_json(PathBuf::from(entry).as_path(), doc).map_err(|e| {
-            set_error(&e);
-            CYT_ERR_IO
-        })?;
+        let value =
+            load_merged_document_json(PathBuf::from(entry).as_path(), doc).map_err(|e| {
+                set_error(&e);
+                CYT_ERR_IO
+            })?;
         unsafe { write_json_out(&value, out)? };
         Ok(())
     })
@@ -820,4 +810,3 @@ pub unsafe extern "C" fn cyt_update_skill_document_source_path(
         Ok(())
     })
 }
-

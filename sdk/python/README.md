@@ -1,6 +1,7 @@
 # chunk-your-skills (Python)
 
-Python bindings for the [chunk-your-skills](https://crates.io/crates/chunk-your-skills) Rust crate — SKILL.md pageindex and skinny-skill recomposition.
+Python bindings for the [chunk-your-skills](https://crates.io/crates/chunk-your-skills) Rust crate —
+SKILL.md pageindex and skinny-skill recomposition.
 
 ```bash
 cd sdk/python

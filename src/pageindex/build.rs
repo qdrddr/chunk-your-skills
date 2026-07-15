@@ -11,9 +11,7 @@ use super::document_json::{
 use super::index::md_to_tree;
 use super::parse::{extract_node_text_content, extract_nodes_from_markdown, extract_skill_prefix};
 use super::tree::{build_tree_from_nodes, finalize_skill_structure};
-use super::types::{
-    MdIndexResult, SkillDocument, SkillsIndex, build_skill_document, doc_id_from_rel_path,
-};
+use super::types::{MdIndexResult, SkillsIndex, build_skill_document, doc_id_from_rel_path};
 
 /// Build an in-memory skills index from one or more skill directories.
 ///

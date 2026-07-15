@@ -1,13 +1,14 @@
 // N-API bindings for the Rust cache engine (included from `node.rs`).
+#![allow(dead_code)] // Exported to JavaScript via napi-derive.
 
 use crate::cache::{
-    ensure_skills_registry_from_specs, parse_skill_source_specs_json, parse_skill_sources,
-    CachePolicy, CacheStatus,
+    CachePolicy, CacheStatus, ensure_skills_registry_from_specs, parse_skill_source_specs_json,
+    parse_skill_sources,
 };
 use crate::pageindex::PageIndexConfig;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::path::PathBuf;
 
 fn cache_policy_from_str(raw: Option<&str>) -> CachePolicy {
@@ -31,7 +32,9 @@ const fn cache_status_str(status: CacheStatus) -> &'static str {
 }
 
 fn page_index_config_from_value(config: Option<Value>) -> PageIndexConfig {
-    config.map_or_else(PageIndexConfig::default, |val| PageIndexConfig::from_value(&val))
+    config.map_or_else(PageIndexConfig::default, |val| {
+        PageIndexConfig::from_value(&val)
+    })
 }
 
 /// # Errors
@@ -88,6 +91,7 @@ pub fn ensure_skills_registry_napi(
 ///
 /// Returns an error when the config object cannot be parsed.
 #[napi(js_name = "configureMemoryCache")]
+#[allow(clippy::unnecessary_wraps)]
 #[allow(clippy::needless_pass_by_value)]
 pub fn configure_memory_cache_napi(config: Value) -> Result<()> {
     crate::cache::configure_memory_cache(&config);

@@ -87,9 +87,8 @@ impl SkillsBuilder {
 
     #[must_use]
     pub fn to_skills_dict(&self) -> Option<serde_json::Value> {
-        self.index.as_ref().map(|index| index.documents_as_json())
+        self.index.as_ref().map(SkillsIndex::documents_as_json)
     }
-
 }
 
 impl Default for SkillsBuilder {
@@ -97,4 +96,3 @@ impl Default for SkillsBuilder {
         Self::new(true, None)
     }
 }
-

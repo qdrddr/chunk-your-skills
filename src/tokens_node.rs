@@ -1,4 +1,5 @@
 // N-API bindings for tiktoken token counting (included from `node.rs`).
+#![allow(dead_code)] // Exported to JavaScript via napi-derive.
 
 use crate::tiktoken::{self, AllowedSpecial};
 use napi::bindgen_prelude::*;
@@ -63,4 +64,3 @@ pub fn count_tokens_batch_napi(texts: Vec<String>) -> Result<Vec<u32>> {
         .map(|n| u32::try_from(n).map_err(|_| Error::from_reason("token count overflow")))
         .collect()
 }
-

@@ -208,4 +208,3 @@ jobs:
 
       - name: Test published C SDK
         run: sdk/e2e/scripts/run-target.sh c
-

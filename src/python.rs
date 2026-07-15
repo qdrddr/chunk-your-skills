@@ -12,8 +12,8 @@ use pyo3::types::PyAny;
 use pythonize::{depythonize, pythonize};
 use serde_json::Value;
 
-pub(crate) fn py_to_value(obj: Bound<'_, PyAny>) -> PyResult<Value> {
-    depythonize(&obj).map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+pub(crate) fn py_to_value(obj: &Bound<'_, PyAny>) -> PyResult<Value> {
+    depythonize(obj).map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
 }
 
 pub(crate) fn value_to_py(py: Python<'_>, value: &Value) -> PyResult<Py<PyAny>> {

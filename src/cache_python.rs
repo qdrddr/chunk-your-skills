@@ -1,4 +1,5 @@
 //! `PyO3` bindings for the Rust cache engine.
+#![allow(clippy::needless_pass_by_value)] // PyO3 `Bound<'_, PyAny>` handlers follow extension conventions.
 
 use std::path::PathBuf;
 
@@ -31,7 +32,7 @@ const fn cache_status_str(status: CacheStatus) -> &'static str {
 
 fn page_index_config_from_py(config: Option<Bound<'_, PyAny>>) -> PyResult<PageIndexConfig> {
     match config {
-        Some(obj) => Ok(PageIndexConfig::from_value(&py_to_value(obj)?)),
+        Some(obj) => Ok(PageIndexConfig::from_value(&py_to_value(&obj)?)),
         None => Ok(PageIndexConfig::default()),
     }
 }
@@ -44,7 +45,7 @@ fn ensure_skills_registry_py(
     pageindex_config: Option<Bound<'_, PyAny>>,
     policy: Option<&str>,
 ) -> PyResult<Py<PyAny>> {
-    let sources_val = py_to_value(source_paths)?;
+    let sources_val = py_to_value(&source_paths)?;
     let sources_arr = sources_val.as_array().cloned().unwrap_or_default();
     let specs = if sources_arr.iter().any(serde_json::Value::is_object) {
         parse_skill_source_specs_json(&sources_arr)
@@ -89,7 +90,7 @@ fn ensure_skills_registry_py(
 
 #[pyfunction(name = "configure_memory_cache")]
 fn configure_memory_cache_py(config: Bound<'_, PyAny>) -> PyResult<()> {
-    configure_memory_cache(&py_to_value(config)?);
+    configure_memory_cache(&py_to_value(&config)?);
     Ok(())
 }
 

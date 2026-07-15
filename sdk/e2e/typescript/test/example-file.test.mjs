@@ -13,40 +13,33 @@ import {
 const { file: exampleFile, output: outputFile } = parseTestArgs();
 
 test(
-  "decompose from example file",
+  "decompose skill markdown from example file",
   {
     skip: exampleFile
       ? false
-      : "pass --file to run against a local debug snapshot",
+      : "pass --file to run against a local SKILL.md snapshot",
   },
   () => {
     if (!exampleFile) {
       return;
     }
     const snapshotPath = resolveSnapshotPath(exampleFile);
-    const data = loadSnapshot(snapshotPath);
-    extractSnapshotParts(data);
+    const markdown = loadSnapshot(snapshotPath);
+    extractSnapshotParts(markdown);
 
-    const catalog = catalogDictFromSnapshot(data);
+    const catalog = catalogDictFromSnapshot(markdown);
     const jsonChunks = catalog.json ?? [];
     const mdChunks = catalog.md ?? [];
 
-    assert.ok(
-      jsonChunks.length > 0,
-      "buildCatalogIndex produced no json chunks",
-    );
-    assert.ok(
-      mdChunks.length > 0,
-      "buildCatalogIndex produced no md enum chunks",
-    );
+    assert.ok(jsonChunks.length > 0, "mdToTree produced no json chunks");
+    assert.ok(mdChunks.length > 0, "snapshot produced no markdown chunks");
     assert.ok(
       jsonChunks.some(
         (/** @type {{ file_path?: string }} */ entry) =>
           typeof entry.file_path === "string" &&
-          entry.file_path.includes("/schemas/decomposed/") &&
           entry.file_path.endsWith(".json"),
       ),
-      "expected per-property decomposed json chunks",
+      "expected tree json chunk",
     );
 
     writeOutput(catalog, outputFile);

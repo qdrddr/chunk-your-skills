@@ -6,10 +6,7 @@ pub struct OwnedSpecRefs {
 
 impl OwnedSpecRefs {
     #[must_use]
-    pub fn new(
-        line_num_specs: Option<Vec<String>>,
-        node_id_specs: Option<Vec<String>>,
-    ) -> Self {
+    pub fn new(line_num_specs: Option<Vec<String>>, node_id_specs: Option<Vec<String>>) -> Self {
         Self {
             lines: line_num_specs.unwrap_or_default(),
             nodes: node_id_specs.unwrap_or_default(),

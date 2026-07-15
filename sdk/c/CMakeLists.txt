@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
-project(chunk-your-skills-c VERSION 1.1.0 LANGUAGES C)
+project(chunk-your-skills-c VERSION 1.0.0 LANGUAGES C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CYS_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-set(CYS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
-set(CYS_BUILD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/build-c-lib.sh")
+get_filename_component(CYS_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+get_filename_component(CYS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include" ABSOLUTE)
+get_filename_component(CYS_BUILD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/build-c-lib.sh" ABSOLUTE)
 
 option(CYS_BUILD_SHARED "Expose shared library imported target" ON)
 option(CYS_BUILD_STATIC "Expose static library imported target" OFF)
@@ -42,13 +42,9 @@ else()
     set(CYS_LIB_PROFILE release)
 endif()
 
-if(DEFINED ENV{CARGO_TARGET_DIR} AND NOT "$ENV{CARGO_TARGET_DIR}" STREQUAL "")
-    set(CYS_TARGET_DIR "$ENV{CARGO_TARGET_DIR}")
-else()
-    set(CYS_TARGET_DIR "${CYS_REPO_ROOT}/target")
-endif()
+get_filename_component(CYS_TARGET_DIR "${CYS_REPO_ROOT}/target" ABSOLUTE)
 
-set(CYS_ARTIFACT_DIR "${CYS_TARGET_DIR}/${CYS_RUST_TARGET}/${CYS_LIB_PROFILE}")
+get_filename_component(CYS_ARTIFACT_DIR "${CYS_TARGET_DIR}/${CYS_RUST_TARGET}/${CYS_LIB_PROFILE}" ABSOLUTE)
 
 if(CYS_LIB_PROFILE STREQUAL "debug")
     set(_cys_build_profile_flag --debug)
@@ -110,7 +106,18 @@ function(cys_add_example name source)
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CYS_INCLUDE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/examples")
-    target_link_libraries("${name}" PRIVATE CYS::chunk_your_skills)
+    if(WIN32)
+        target_link_libraries("${name}" PRIVATE CYS::chunk_your_skills)
+    else()
+        # Static link avoids dyld picking up a stale shared lib when other SDK
+        # builds (e.g. TypeScript napi) rebuild the crate with different features.
+        target_link_libraries("${name}" PRIVATE "${CYS_STATIC_LIB}" pthread)
+        if(APPLE)
+            target_link_libraries("${name}" PRIVATE "-framework Security")
+        else()
+            target_link_libraries("${name}" PRIVATE dl m)
+        endif()
+    endif()
     add_dependencies("${name}" chunk_your_skills_build)
     if(WIN32)
         add_custom_command(TARGET "${name}" POST_BUILD

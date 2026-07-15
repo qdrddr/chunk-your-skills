@@ -4,9 +4,9 @@
 
 int main(void) {
     char *out = NULL;
-    int code = cyt_build_catalog_index(NULL, "[]", &out);
+    int code = cyt_md_to_tree(NULL, "skill.md", "{}", &out);
     if (code == CYT_CYT_OK) {
-        fprintf(stderr, "expected failure for NULL tools_json\n");
+        fprintf(stderr, "expected failure for NULL markdown_content\n");
         cyt_example_free(cyt_example_take(&out));
         return 1;
     }
@@ -23,9 +23,9 @@ int main(void) {
         return 1;
     }
 
-    code = cyt_build_catalog_index("not-json", "[]", &out);
+    code = cyt_md_to_tree("not markdown only", "skill.md", "not-json", &out);
     if (code == CYT_CYT_OK) {
-        fprintf(stderr, "expected JSON parse failure\n");
+        fprintf(stderr, "expected config parse failure\n");
         cyt_example_free(cyt_example_take(&out));
         return 1;
     }

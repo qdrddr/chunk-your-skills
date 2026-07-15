@@ -8,7 +8,7 @@ use crate::cache::hot::store_merged_document;
 use crate::cache::lru::LruCache;
 use crate::cache::materialize::extract_frontmatter_from_markdown;
 use crate::cache::test_guard::CacheConfigTestGuard;
-use crate::cache::{ensure_skills_registry, CachePolicy};
+use crate::cache::{CachePolicy, ensure_skills_registry};
 use crate::pageindex::PageIndexConfig;
 use serde_json::json;
 
@@ -17,6 +17,7 @@ fn lru_evicts_oldest_entry() {
     let mut cache = LruCache::new(2);
     cache.insert("a", 1);
     cache.insert("b", 2);
+    assert_eq!(cache.len(), 2);
     let _ = cache.get(&"a");
     cache.insert("c", 3);
     assert!(cache.get(&"b").is_none());

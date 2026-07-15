@@ -61,7 +61,7 @@ if [[ -z "${CYS_LOCAL_DEV_LIB_SOURCED:-}" ]]; then
 	}
 
 	cyt_npm() {
-		env -u npm_config_devdir npm "$@"
+		env -u npm_config_devdir -u NODE_ENV npm "$@"
 	}
 
 	require_repo_root() {

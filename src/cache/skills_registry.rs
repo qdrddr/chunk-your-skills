@@ -6,18 +6,19 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
+use super::config::memory_cache_config;
+use super::disk_writer::maybe_enqueue_skills_index;
+use super::hot::{get_merged_document, store_merged_document, store_skills_index};
+use super::lock::BuildLock;
+use super::manifest::CacheStatus;
+use super::materialize::{ensure_entry_materialized, stub_document_from_source};
+use super::{CachePolicy, disk_available, expand_tilde};
 use crate::pageindex::cache_layout::nodes_dir;
 use crate::pageindex::cache_layout::skill_entry_dir;
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, SkillDocument, SkillsIndex, build_page_index_for_content,
     build_page_index_for_file, load_merged_document_json, page_index_valid, write_page_index_entry,
 };
-use super::config::memory_cache_config;
-use super::disk_writer::maybe_enqueue_skills_index;
-use super::hot::{get_merged_document, store_merged_document, store_skills_index};
-use super::manifest::CacheStatus;
-use super::materialize::stub_document_from_source;
-use super::{CachePolicy, disk_available, expand_tilde};
 
 #[derive(Debug, Clone)]
 pub struct SkillSourceSpec {
@@ -156,6 +157,11 @@ fn ensure_one_skill_entry(
         lazy_pending = true;
         document = Some(stub_document_from_source(source, &doc_id)?);
     } else {
+        let _build_lock = if disk_ok {
+            Some(BuildLock::acquire(&entry_dir)?)
+        } else {
+            None
+        };
         let index = if let Some(ref content) = spec.content {
             build_page_index_for_content(source, content, pageindex_config)?
         } else {
@@ -239,14 +245,19 @@ pub fn ensure_skills_registry_from_specs(
         if spec.content.is_none() && !spec.path.is_file() {
             continue;
         }
-        refs.push(ensure_one_skill_entry(
+        let mut entry = ensure_one_skill_entry(
             spec,
             &root,
             pageindex_config,
             policy,
             disk_ok,
             lazy_registry,
-        )?);
+        )?;
+        if entry.lazy_pending && policy == CachePolicy::ForceDisk {
+            ensure_entry_materialized(spec.path.as_path(), &entry, pageindex_config, policy)?;
+            entry.lazy_pending = false;
+        }
+        refs.push(entry);
     }
 
     Ok(refs)
