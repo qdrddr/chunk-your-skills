@@ -114,6 +114,7 @@ jobs:
 
       - name: Build native binding
         working-directory: sdk/typescript
+        shell: bash
         run: |
           npx napi build --platform --release \
             --manifest-path ../../Cargo.toml \
