@@ -19,11 +19,11 @@ elif [[ "$EVENT_NAME" == "workflow_run" ]]; then
 	fi
 	gh run download "${PARENT_RUN_ID}" \
 		--repo "${GITHUB_REPOSITORY}" \
-		--name cyt-release-version \
-		--dir /tmp/cyt-release-version
-	VERSION="$(tr -d '\n' </tmp/cyt-release-version/cyt-release-version.txt)"
+		--name cys-release-version \
+		--dir /tmp/cys-release-version
+	VERSION="$(tr -d '\n' </tmp/cys-release-version/cys-release-version.txt)"
 	if [[ -z "$VERSION" ]]; then
-		echo "::error::cyt-release-version artifact was empty" >&2
+		echo "::error::cys-release-version artifact was empty" >&2
 		exit 1
 	fi
 fi
@@ -35,3 +35,4 @@ fi
 if [[ -n "$VERSION" ]]; then
 	echo "CYT_RELEASE_VERSION=${VERSION}"
 fi
+
