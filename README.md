@@ -28,6 +28,14 @@ for the MCP tool-gating proxy.
 
 ## Packages
 
+<div align="center">
+
+[![Windows][windows-shield]](#supported-platforms)
+[![macOS][macos-shield]](#supported-platforms)
+[![Linux][linux-shield]](#supported-platforms)
+
+</div>
+
 <details open>
 <summary><strong>Published packages</strong></summary>
 
@@ -142,16 +150,6 @@ For SDK usage, see the language READMEs below. Python quick start: [sdk/python/R
 | TypeScript | `sdk/typescript` | [README](sdk/typescript/README.md) |
 | Go | `sdk/go` | [README](sdk/go/README.md) |
 | C | `sdk/c` | [README](sdk/c/README.md) |
-
-## Supported platforms
-
-<div align="center">
-
-[![Windows][windows-shield]](#supported-platforms)
-[![macOS][macos-shield]](#supported-platforms)
-[![Linux][linux-shield]](#supported-platforms)
-
-</div>
 
 ## Development
 
