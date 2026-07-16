@@ -12,22 +12,22 @@ header = """
  *
  * # Memory Management
  *
- * - Strings returned via `char**` out parameters MUST be freed with `cyt_free_string()`.
- * - Opaque handles (`CytSkillsBuilder`)
- *   MUST be freed with their matching `cyt_*_free()` function.
+ * - Strings returned via `char**` out parameters MUST be freed with `chunk_your_skills_free_string()`.
+ * - Opaque handles (`ChunkYourSkillsBuilder`)
+ *   MUST be freed with their matching `chunk_your_skills_*_free()` function.
  * - Input C strings remain owned by the caller.
  *
  * # Thread Safety
  *
- * Error messages are stored in thread-local storage. Call `cyt_get_last_error()`
+ * Error messages are stored in thread-local storage. Call `chunk_your_skills_get_last_error()`
  * from the same thread that received a non-zero error code.
  *
  * # Return Conventions
  *
- * - `CYT_OK` (0) on success for status functions.
- * - Negative error codes on failure; see `cyt_get_last_error()`.
+ * - `CHUNK_YOUR_SKILLS_OK` (0) on success for status functions.
+ * - Negative error codes on failure; see `chunk_your_skills_get_last_error()`.
  * - JSON outputs: int return code + `char**` out param.
- * - Boolean queries: 1 true, 0 false, negative on error (or `int*` out with `CYT_OK`).
+ * - Boolean queries: 1 true, 0 false, negative on error (or `int*` out with `CHUNK_YOUR_SKILLS_OK`).
  */
 """
 
@@ -41,10 +41,10 @@ line_length = 100
 documentation_style = "c"
 documentation_length = "full"
 
-namespace = "cyt"
+namespace = "chunk_your_skills"
 
 [export]
-prefix = "CYT_"
+prefix = "CHUNK_YOUR_SKILLS_"
 
 [parse]
 parse_deps = false
@@ -59,6 +59,4 @@ derive_eq = false
 derive_neq = false
 
 [export.rename]
-"CytCatalogBuilder" = "CytCatalogBuilder"
-"CytDecomposedCatalog" = "CytDecomposedCatalog"
-"CytSkillsBuilder" = "CytSkillsBuilder"
+"ChunkYourSkillsBuilder" = "SkillsBuilder"

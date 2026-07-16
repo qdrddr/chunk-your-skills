@@ -22,7 +22,7 @@ git push origin "sdk/go/v${version}"
 
 cargo test -p chunk-your-skills
 cargo publish --dry-run
-CARGO_REGISTRY_TOKEN="$(security find-generic-password -s "cyt" -a "CARGO_REGISTRY_TOKEN" -w)"
+CARGO_REGISTRY_TOKEN="$(security find-generic-password -s "chunk-your-skills" -a "CARGO_REGISTRY_TOKEN" -w)"
 export CARGO_REGISTRY_TOKEN
 # cargo login
 
@@ -37,7 +37,7 @@ cargo publish --allow-dirty
 # git push -f origin chunk_your_skills-rust-v0.1.6
 
 # bash scripts/sync-version.sh
-# export CARGO_REGISTRY_TOKEN="$(security find-generic-password -s "cyt" -a "CARGO_REGISTRY_TOKEN" -w)"
+# export CARGO_REGISTRY_TOKEN="$(security find-generic-password -s "chunk-your-skills" -a "CARGO_REGISTRY_TOKEN" -w)"
 # cargo build -p chunk_your_skills
 # cargo test -p chunk_your_skills
 # cargo publish -p chunk_your_skills --dry-run

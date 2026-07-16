@@ -42,7 +42,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
-      CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
+      CHUNK_YOUR_SKILLS_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
 

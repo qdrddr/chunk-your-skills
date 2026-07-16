@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Resolve CYT_RELEASE_VERSION for workflow_run chains or workflow_dispatch input.
+# Resolve CHUNK_YOUR_SKILLS_RELEASE_VERSION for workflow_run chains or workflow_dispatch input.
 # Writes github output "version" (may be empty for manual dispatch without input).
 set -euo pipefail
 
@@ -33,5 +33,5 @@ fi
 } >>"${GITHUB_OUTPUT:?}"
 
 if [[ -n "$VERSION" ]]; then
-	echo "CYT_RELEASE_VERSION=${VERSION}"
+	echo "CHUNK_YOUR_SKILLS_RELEASE_VERSION=${VERSION}"
 fi

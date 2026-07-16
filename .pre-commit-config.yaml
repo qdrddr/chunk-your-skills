@@ -397,6 +397,16 @@ repos:
         pass_filenames: false
         language: system
         files: '^src/.*\.py$'
+      - id: check-no-legacy-prefix
+        name: check-no-legacy-prefix
+        entry: bash scripts/prek-hook.sh
+        args:
+          [
+            'cd "$(git rev-parse --show-toplevel)" && ./scripts/check_no_legacy_prefix.sh',
+          ]
+        pass_filenames: false
+        language: system
+        always_run: true
       - id: check-agent-imports
         name: check-agent-imports
         entry: bash scripts/prek-hook.sh

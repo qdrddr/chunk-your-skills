@@ -7,7 +7,7 @@ import test from "node:test";
 import { SkillsBuilder } from "../pageindex.js";
 
 async function createSkillDir(): Promise<string> {
-  const tmp = await mkdtemp(join(tmpdir(), "cyt-skills-"));
+  const tmp = await mkdtemp(join(tmpdir(), "chunk-your-skills-"));
   const skillsDir = join(tmp, "skills");
   await mkdir(skillsDir, { recursive: true });
   await writeFile(join(skillsDir, "x.md"), "# X\n\nY", "utf8");

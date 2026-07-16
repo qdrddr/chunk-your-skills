@@ -59,7 +59,7 @@ markdown from explicit node IDs.
 | --- | --- |
 | **Token counting** | Removed in v1.0.8. Decomposed node files still carry an empty `token_count:` frontmatter field for compatibility. |
 | **Go / C** | Require a built FFI library (`cgo` / CMake). See [sdk/go/README.md](sdk/go/README.md) and [sdk/c/README.md](sdk/c/README.md). |
-| **Cache env vars** | `CYT_CACHE_*` names are legacy but still control memory-cache tuning in Python. |
+| **Cache env vars** | `CHUNK_YOUR_SKILLS_CACHE_*` control memory-cache tuning in Python. |
 | **Legacy cache fields** | `lru_tantivy_indexes` and `lru_tool_catalogs` remain in the memory-cache schema from an earlier monorepo layout; they are not used by the skills pageindex path. |
 
 ---

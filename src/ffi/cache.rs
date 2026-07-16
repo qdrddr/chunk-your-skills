@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use crate::cache::{CachePolicy, CacheStatus, configure_memory_cache};
-use crate::ffi::error::CYT_ERR_NULL_PTR;
+use crate::ffi::error::ERR_NULL_PTR;
 use crate::ffi::json_util::{c_str_to_str, parse_json_cstr, run_ffi, write_json_out};
 use crate::pageindex::PageIndexConfig;
 use serde_json::{Value, json};
@@ -39,7 +39,7 @@ fn page_index_config_from_json(config_json: *const c_char) -> Result<PageIndexCo
 ///
 /// All string pointers must be valid null-terminated UTF-8 C strings; `out` must be non-null.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_ensure_skills_registry(
+pub unsafe extern "C" fn chunk_your_skills_ensure_skills_registry(
     source_paths_json: *const c_char,
     catalog_root: *const c_char,
     pageindex_config_json: *const c_char,
@@ -48,14 +48,14 @@ pub unsafe extern "C" fn cyt_ensure_skills_registry(
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let paths_val = parse_json_cstr(source_paths_json, "source_paths_json")?;
         let paths_arr = paths_val.as_array().cloned().unwrap_or_default();
         let specs = if paths_arr.iter().any(serde_json::Value::is_object) {
             crate::cache::parse_skill_source_specs_json(&paths_arr).map_err(|e| {
                 crate::ffi::error::set_error(&e);
-                crate::ffi::error::CYT_ERR_INVALID_ARG
+                crate::ffi::error::ERR_INVALID_ARG
             })?
         } else {
             let paths: Vec<PathBuf> = paths_arr
@@ -79,7 +79,7 @@ pub unsafe extern "C" fn cyt_ensure_skills_registry(
         )
         .map_err(|e| {
             crate::ffi::error::set_error(&e);
-            crate::ffi::error::CYT_ERR_INVALID_ARG
+            crate::ffi::error::ERR_INVALID_ARG
         })?;
         let list: Vec<Value> = refs
             .into_iter()
@@ -108,7 +108,9 @@ pub unsafe extern "C" fn cyt_ensure_skills_registry(
 ///
 /// `config_json` must be a valid null-terminated UTF-8 C string when non-null.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_configure_memory_cache(config_json: *const c_char) -> c_int {
+pub unsafe extern "C" fn chunk_your_skills_configure_memory_cache(
+    config_json: *const c_char,
+) -> c_int {
     run_ffi(|| {
         let val = if config_json.is_null() {
             json!({})

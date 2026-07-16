@@ -24,7 +24,12 @@ scripts/                      # local-dev, sync-version, publish helpers
 - **Go** — Go SDK (`sdk/go`, requires cgo)
 - **CMake**, **make** (or **gmake**), **ctest** — C SDK (`sdk/c`)
 
-Optional: **prek** / **pre-commit** for local hooks (see `.pre-commit-config.yaml`).
+Optional: **prek** / **pre-commit** for local hooks (see `.pre-commit-config.yaml`). The
+`check-no-legacy-prefix` hook runs `./scripts/check_no_legacy_prefix.sh` to block legacy naming
+regressions.
+
+If you use a local Cursor rules file named for the old prefix, rename it to
+`chunk-your-skills-injection.mdc` under `.cursor/rules/` (gitignored).
 
 ## Local workflow
 

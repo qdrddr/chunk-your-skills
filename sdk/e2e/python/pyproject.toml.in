@@ -2,7 +2,7 @@
 name = "chunk-your-skills-registry-e2e"
 version = "0.0.0"
 requires-python = ">=3.13,<4.0"
-dependencies = ["chunk-your-skills==@CYT_RELEASE_VERSION@"]
+dependencies = ["chunk-your-skills==@CHUNK_YOUR_SKILLS_RELEASE_VERSION@"]
 
 [dependency-groups]
 test = ["pytest>=8.0"]

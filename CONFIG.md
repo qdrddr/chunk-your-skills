@@ -179,15 +179,15 @@ When building or refreshing skill registries at scale, tune in-memory caching.
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `CYT_CACHE_LAZY_REGISTRY` | `false` | Defer registry loading until first use |
-| `CYT_CACHE_ASYNC_DISK` | `true` | Write catalog files asynchronously |
-| `CYT_CACHE_LRU_CHUNK_BODIES` | `512` | LRU capacity for chunk bodies |
-| `CYT_CACHE_LRU_MERGED_DOCUMENTS` | `128` | LRU capacity for merged documents |
-| `CYT_CACHE_LRU_SKILLS_INDEX` | `64` | LRU capacity for skills indexes |
-| `CYT_CACHE_LRU_TANTIVY_INDEXES` | `32` | Reserved (legacy field) |
-| `CYT_CACHE_LRU_TOOL_CATALOGS` | `128` | Reserved (legacy field) |
+| `CHUNK_YOUR_SKILLS_CACHE_LAZY_REGISTRY` | `false` | Defer registry loading until first use |
+| `CHUNK_YOUR_SKILLS_CACHE_ASYNC_DISK` | `true` | Write catalog files asynchronously |
+| `CHUNK_YOUR_SKILLS_CACHE_LRU_CHUNK_BODIES` | `512` | LRU capacity for chunk bodies |
+| `CHUNK_YOUR_SKILLS_CACHE_LRU_MERGED_DOCUMENTS` | `128` | LRU capacity for merged documents |
+| `CHUNK_YOUR_SKILLS_CACHE_LRU_SKILLS_INDEX` | `64` | LRU capacity for skills indexes |
+| `CHUNK_YOUR_SKILLS_CACHE_LRU_TANTIVY_INDEXES` | `32` | Reserved (legacy field) |
+| `CHUNK_YOUR_SKILLS_CACHE_LRU_TOOL_CATALOGS` | `128` | Reserved (legacy field) |
 
-The `CYT_` prefix is historical; these variables apply to chunk-your-skills cache behavior only.
+These variables apply to chunk-your-skills memory-cache behavior.
 
 ### Python API
 

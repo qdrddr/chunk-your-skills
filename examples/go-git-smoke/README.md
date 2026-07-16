@@ -28,11 +28,11 @@ chmod +x prepare.sh ensure-ffi.sh run.sh
 
 ```bash
 export CGO_ENABLED=1
-export CYT_RELEASE_VERSION=1.1.0
+export CHUNK_YOUR_SKILLS_RELEASE_VERSION=1.1.0
 
 ./prepare.sh
 STAGING="$(./prepare.sh)"
-./ensure-ffi.sh "$STAGING" "$CYT_RELEASE_VERSION"
+./ensure-ffi.sh "$STAGING" "$CHUNK_YOUR_SKILLS_RELEASE_VERSION"
 eval "$(./ensure-ffi.sh --print-cgo "$STAGING")"
 
 go mod tidy

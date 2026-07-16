@@ -441,7 +441,10 @@ mod tests {
 
     #[test]
     fn node_id_retrieve_includes_parent() -> Result<(), String> {
-        let tmp = std::env::temp_dir().join(format!("cyt-reconstruct-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!(
+            "chunk-your-skills-reconstruct-{}",
+            std::process::id()
+        ));
         let skills_root = tmp.join("skills");
         let skills_dir = skills_root.join("lean-ctx");
         fs::create_dir_all(&skills_dir).map_err(|e| e.to_string())?;
@@ -485,8 +488,10 @@ mod tests {
 
     #[test]
     fn writes_under_catalog_retrieve_dir() -> Result<(), String> {
-        let tmp =
-            std::env::temp_dir().join(format!("cyt-reconstruct-write-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!(
+            "chunk-your-skills-reconstruct-write-{}",
+            std::process::id()
+        ));
         let skills_root = tmp.join("skills");
         let skills_dir = skills_root.join("lean-ctx");
         let catalog = tmp.join("catalog");
@@ -516,7 +521,10 @@ mod tests {
 
     #[test]
     fn uses_catalog_frontmatter_over_live_file() -> Result<(), String> {
-        let tmp = std::env::temp_dir().join(format!("cyt-reconstruct-fm-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!(
+            "chunk-your-skills-reconstruct-fm-{}",
+            std::process::id()
+        ));
         let skills_root = tmp.join("skills");
         let skills_dir = skills_root.join("demo");
         fs::create_dir_all(&skills_dir).map_err(|e| e.to_string())?;
@@ -550,7 +558,10 @@ mod tests {
 
     #[test]
     fn content_retrieve_result_includes_matched_and_restored_nodes() -> Result<(), String> {
-        let tmp = std::env::temp_dir().join(format!("cyt-retrieve-out-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!(
+            "chunk-your-skills-retrieve-out-{}",
+            std::process::id()
+        ));
         let skills_root = tmp.join("skills");
         let skills_dir = skills_root.join("lean-ctx");
         fs::create_dir_all(&skills_dir).map_err(|e| e.to_string())?;
@@ -620,8 +631,10 @@ mod tests {
 
     #[test]
     fn keep_all_headers_preserves_unmatched_section_headings() -> Result<(), String> {
-        let tmp =
-            std::env::temp_dir().join(format!("cyt-reconstruct-headers-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!(
+            "chunk-your-skills-reconstruct-headers-{}",
+            std::process::id()
+        ));
         let skills_root = tmp.join("skills");
         let skills_dir = skills_root.join("lean-ctx");
         fs::create_dir_all(&skills_dir).map_err(|e| e.to_string())?;
@@ -661,8 +674,10 @@ mod tests {
 
     #[test]
     fn frontmatter_preamble_and_headings_use_reserved_node_ids() -> Result<(), String> {
-        let tmp =
-            std::env::temp_dir().join(format!("cyt-reconstruct-preamble-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!(
+            "chunk-your-skills-reconstruct-preamble-{}",
+            std::process::id()
+        ));
         let skills_root = tmp.join("skills");
         let skills_dir = skills_root.join("ctx");
         fs::create_dir_all(&skills_dir).map_err(|e| e.to_string())?;
@@ -734,7 +749,7 @@ mod tests {
     #[test]
     fn node_retrieve_omits_preamble_when_not_selected() -> Result<(), String> {
         let tmp = std::env::temp_dir().join(format!(
-            "cyt-reconstruct-preamble-select-{}",
+            "chunk-your-skills-reconstruct-preamble-select-{}",
             std::process::id()
         ));
         let skills_root = tmp.join("skills");

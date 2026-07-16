@@ -55,53 +55,53 @@ _cys_local_dev_main() {
 	case "${cmd}" in
 	core-rust | rust)
 		require_repo_root
-		cyt_build_rust
+		cys_build_rust
 		;;
 	sdk-python)
 		require_repo_root
-		cyt_build_sdk_python
-		cyt_verify_sdk_python
+		cys_build_sdk_python
+		cys_verify_sdk_python
 		;;
 	sdk-verify)
 		require_repo_root
-		cyt_verify_sdk_python
+		cys_verify_sdk_python
 		;;
 	sdk-typescript)
 		require_repo_root
-		cyt_build_sdk_typescript
+		cys_build_sdk_typescript
 		;;
 	sdk-c)
 		require_repo_root
-		cyt_build_sdk_c
+		cys_build_sdk_c
 		;;
 	sdk-go)
 		require_repo_root
-		cyt_build_sdk_go
+		cys_build_sdk_go
 		;;
 	sdk-all)
 		require_repo_root
-		cyt_section "SDK: Python"
-		cyt_build_sdk_python
-		cyt_verify_sdk_python
-		cyt_section "SDK: C"
-		cyt_build_sdk_c
-		cyt_section "SDK: Go"
-		cyt_build_sdk_go
-		cyt_section "SDK: TypeScript"
-		cyt_build_sdk_typescript
+		cys_section "SDK: Python"
+		cys_build_sdk_python
+		cys_verify_sdk_python
+		cys_section "SDK: C"
+		cys_build_sdk_c
+		cys_section "SDK: Go"
+		cys_build_sdk_go
+		cys_section "SDK: TypeScript"
+		cys_build_sdk_typescript
 		;;
 	all)
 		require_repo_root
-		cyt_run_all
+		cys_run_all
 		info "all done"
 		;;
 	ci)
 		require_repo_root
-		cyt_section "CI"
-		cyt_build_rust
-		cyt_build_sdk_python
-		cyt_verify_sdk_python
-		cyt_test_sdk_python
+		cys_section "CI"
+		cys_build_rust
+		cys_build_sdk_python
+		cys_verify_sdk_python
+		cys_test_sdk_python
 		;;
 	"" | -h | --help | help)
 		usage
@@ -119,7 +119,7 @@ _cys_local_dev_main() {
 }
 
 if [[ -n "${CYS_LOCAL_DEV_SHORT}" ]]; then
-	_cys_local_dev_main "${LOCAL_DEV_ARGS[@]}" 2>&1 | shorten_paths | cyt_filter_short_logs
+	_cys_local_dev_main "${LOCAL_DEV_ARGS[@]}" 2>&1 | shorten_paths | cys_filter_short_logs
 else
 	_cys_local_dev_main "${LOCAL_DEV_ARGS[@]}" 2>&1 | shorten_paths
 fi

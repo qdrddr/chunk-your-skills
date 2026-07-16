@@ -1,7 +1,8 @@
 #![cfg(feature = "ffi")]
 
 use chunk_your_skills::ffi::{
-    CYT_OK, cyt_free_string, cyt_frontmatter_field, cyt_get_version, cyt_parse_frontmatter_fields,
+    OK, chunk_your_skills_free_string, chunk_your_skills_frontmatter_field,
+    chunk_your_skills_get_version, chunk_your_skills_parse_frontmatter_fields,
 };
 use std::ffi::CStr;
 use std::os::raw::c_char;
@@ -14,15 +15,15 @@ const fn cstr(bytes: &'static [u8]) -> &'static CStr {
 
 unsafe fn read_out(out: *mut c_char) -> String {
     let s = unsafe { CStr::from_ptr(out).to_string_lossy().into_owned() };
-    unsafe { cyt_free_string(out) };
+    unsafe { chunk_your_skills_free_string(out) };
     s
 }
 
 #[test]
 fn get_version_smoke() {
     let mut out: *mut c_char = ptr::null_mut();
-    let code = unsafe { cyt_get_version(ptr::addr_of_mut!(out)) };
-    assert_eq!(code, CYT_OK);
+    let code = unsafe { chunk_your_skills_get_version(ptr::addr_of_mut!(out)) };
+    assert_eq!(code, OK);
     assert!(!out.is_null());
     let version = unsafe { read_out(out) };
     assert!(!version.is_empty());
@@ -32,9 +33,10 @@ fn get_version_smoke() {
 fn parse_frontmatter_fields_smoke() {
     let frontmatter = cstr(b"---\nname: demo\ndescription: >-\n  hello world\n---\0");
     let mut out: *mut c_char = ptr::null_mut();
-    let code =
-        unsafe { cyt_parse_frontmatter_fields(frontmatter.as_ptr(), ptr::addr_of_mut!(out)) };
-    assert_eq!(code, CYT_OK);
+    let code = unsafe {
+        chunk_your_skills_parse_frontmatter_fields(frontmatter.as_ptr(), ptr::addr_of_mut!(out))
+    };
+    assert_eq!(code, OK);
     assert!(!out.is_null());
     let json = unsafe { read_out(out) };
     assert!(json.contains("\"name\":\"demo\"") || json.contains("\"name\": \"demo\""));
@@ -43,13 +45,13 @@ fn parse_frontmatter_fields_smoke() {
     let key = cstr(b"description\0");
     let mut field_out: *mut c_char = ptr::null_mut();
     let code = unsafe {
-        cyt_frontmatter_field(
+        chunk_your_skills_frontmatter_field(
             frontmatter.as_ptr(),
             key.as_ptr(),
             ptr::addr_of_mut!(field_out),
         )
     };
-    assert_eq!(code, CYT_OK);
+    assert_eq!(code, OK);
     assert!(!field_out.is_null());
     let field = unsafe { read_out(field_out) };
     assert!(field.contains("hello world"));

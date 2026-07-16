@@ -36,19 +36,32 @@ impl MemoryCacheConfig {
     #[must_use]
     pub fn from_env() -> Self {
         let mut cfg = Self::default();
-        if let Ok(raw) = std::env::var("CYT_CACHE_LAZY_REGISTRY") {
+        if let Ok(raw) = std::env::var("CHUNK_YOUR_SKILLS_CACHE_LAZY_REGISTRY") {
             cfg.lazy_registry = matches!(raw.trim(), "1" | "true" | "yes");
         }
-        if let Ok(raw) = std::env::var("CYT_CACHE_ASYNC_DISK") {
+        if let Ok(raw) = std::env::var("CHUNK_YOUR_SKILLS_CACHE_ASYNC_DISK") {
             cfg.async_disk_writes = matches!(raw.trim(), "1" | "true" | "yes");
         }
-        cfg.lru_chunk_bodies = env_usize("CYT_CACHE_LRU_CHUNK_BODIES", cfg.lru_chunk_bodies);
-        cfg.lru_merged_documents =
-            env_usize("CYT_CACHE_LRU_MERGED_DOCUMENTS", cfg.lru_merged_documents);
-        cfg.lru_skills_index = env_usize("CYT_CACHE_LRU_SKILLS_INDEX", cfg.lru_skills_index);
-        cfg.lru_tantivy_indexes =
-            env_usize("CYT_CACHE_LRU_TANTIVY_INDEXES", cfg.lru_tantivy_indexes);
-        cfg.lru_tool_catalogs = env_usize("CYT_CACHE_LRU_TOOL_CATALOGS", cfg.lru_tool_catalogs);
+        cfg.lru_chunk_bodies = env_usize(
+            "CHUNK_YOUR_SKILLS_CACHE_LRU_CHUNK_BODIES",
+            cfg.lru_chunk_bodies,
+        );
+        cfg.lru_merged_documents = env_usize(
+            "CHUNK_YOUR_SKILLS_CACHE_LRU_MERGED_DOCUMENTS",
+            cfg.lru_merged_documents,
+        );
+        cfg.lru_skills_index = env_usize(
+            "CHUNK_YOUR_SKILLS_CACHE_LRU_SKILLS_INDEX",
+            cfg.lru_skills_index,
+        );
+        cfg.lru_tantivy_indexes = env_usize(
+            "CHUNK_YOUR_SKILLS_CACHE_LRU_TANTIVY_INDEXES",
+            cfg.lru_tantivy_indexes,
+        );
+        cfg.lru_tool_catalogs = env_usize(
+            "CHUNK_YOUR_SKILLS_CACHE_LRU_TOOL_CATALOGS",
+            cfg.lru_tool_catalogs,
+        );
         cfg
     }
 

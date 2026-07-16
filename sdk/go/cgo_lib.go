@@ -27,11 +27,11 @@ import (
 const ok = 0
 
 type skillsBuilderHandle struct {
-	h *C.CYT_CytSkillsBuilder
+	h *C.CHUNK_YOUR_SKILLS_SkillsBuilder
 }
 
 func lastError() error {
-	msg := C.cyt_get_last_error()
+	msg := C.chunk_your_skills_get_last_error()
 	if msg == nil {
 		return errors.New("chunk-your-skills error")
 	}
@@ -55,16 +55,16 @@ func takeJSON(out **C.char) (string, error) {
 	if ptr == nil {
 		return "", errors.New("null JSON output")
 	}
-	defer C.cyt_free_string(ptr)
+	defer C.chunk_your_skills_free_string(ptr)
 	return C.GoString(ptr), nil
 }
 
 func cgoClearError() {
-	C.cyt_clear_error()
+	C.chunk_your_skills_clear_error()
 }
 
 func cgoGetLastError() string {
-	msg := C.cyt_get_last_error()
+	msg := C.chunk_your_skills_get_last_error()
 	if msg == nil {
 		return ""
 	}
@@ -73,7 +73,7 @@ func cgoGetLastError() string {
 
 func cgoGetVersion() (string, error) {
 	var out *C.char
-	if C.cyt_get_version(&out) != ok {
+	if C.chunk_your_skills_get_version(&out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -86,8 +86,8 @@ func cgoSkillsBuilderNew(memoryOnly bool, outputDir string) (skillsBuilderHandle
 	if memoryOnly {
 		mem = 1
 	}
-	var handle *C.CYT_CytSkillsBuilder
-	if C.cyt_skills_builder_new(mem, cDir, &handle) != ok {
+	var handle *C.CHUNK_YOUR_SKILLS_SkillsBuilder
+	if C.chunk_your_skills_skills_builder_new(mem, cDir, &handle) != ok {
 		return skillsBuilderHandle{}, lastError()
 	}
 	return skillsBuilderHandle{h: handle}, nil
@@ -95,7 +95,7 @@ func cgoSkillsBuilderNew(memoryOnly bool, outputDir string) (skillsBuilderHandle
 
 func cgoSkillsBuilderFree(h skillsBuilderHandle) {
 	if h.h != nil {
-		C.cyt_skills_builder_free(h.h)
+		C.chunk_your_skills_skills_builder_free(h.h)
 	}
 }
 
@@ -105,7 +105,7 @@ func cgoSkillsBuilderBuildFromDirs(h skillsBuilderHandle, skillDirsJSON, configJ
 	cCfg := cString(configJSON)
 	defer freeCString(cCfg)
 	var out *C.char
-	if C.cyt_skills_builder_build_from_dirs(h.h, cDirs, cCfg, &out) != ok {
+	if C.chunk_your_skills_skills_builder_build_from_dirs(h.h, cDirs, cCfg, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -113,7 +113,7 @@ func cgoSkillsBuilderBuildFromDirs(h skillsBuilderHandle, skillDirsJSON, configJ
 
 func cgoSkillsBuilderWriteCatalog(h skillsBuilderHandle) (string, error) {
 	var out *C.char
-	if C.cyt_skills_builder_write_catalog(h.h, &out) != ok {
+	if C.chunk_your_skills_skills_builder_write_catalog(h.h, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -121,7 +121,7 @@ func cgoSkillsBuilderWriteCatalog(h skillsBuilderHandle) (string, error) {
 
 func cgoSkillsBuilderToSkillsIndexJSON(h skillsBuilderHandle) (string, error) {
 	var out *C.char
-	if C.cyt_skills_builder_to_skills_index_json(h.h, &out) != ok {
+	if C.chunk_your_skills_skills_builder_to_skills_index_json(h.h, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -129,7 +129,7 @@ func cgoSkillsBuilderToSkillsIndexJSON(h skillsBuilderHandle) (string, error) {
 
 func cgoSkillsBuilderToSkillsDict(h skillsBuilderHandle) (string, error) {
 	var out *C.char
-	if C.cyt_skills_builder_to_skills_dict(h.h, &out) != ok {
+	if C.chunk_your_skills_skills_builder_to_skills_dict(h.h, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -141,7 +141,7 @@ func cgoBuildSkillsIndex(skillDirsJSON, configJSON string) (string, error) {
 	cCfg := cString(configJSON)
 	defer freeCString(cCfg)
 	var out *C.char
-	if C.cyt_build_skills_index(cDirs, cCfg, &out) != ok {
+	if C.chunk_your_skills_build_skills_index(cDirs, cCfg, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -152,7 +152,7 @@ func cgoWriteSkillsIndex(indexJSON, outputDir string) error {
 	defer freeCString(cIndex)
 	cDir := cString(outputDir)
 	defer freeCString(cDir)
-	if C.cyt_write_skills_index(cIndex, cDir) != ok {
+	if C.chunk_your_skills_write_skills_index(cIndex, cDir) != ok {
 		return lastError()
 	}
 	return nil
@@ -162,7 +162,7 @@ func cgoLoadSkillsIndexFromDir(catalogDir string) (string, error) {
 	cDir := cString(catalogDir)
 	defer freeCString(cDir)
 	var out *C.char
-	if C.cyt_load_skills_index_from_dir(cDir, &out) != ok {
+	if C.chunk_your_skills_load_skills_index_from_dir(cDir, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -175,7 +175,7 @@ func cgoRepairSkillChunks(entryDir, docID, configJSON string) error {
 	defer freeCString(cDoc)
 	cCfg := cString(configJSON)
 	defer freeCString(cCfg)
-	if C.cyt_repair_skill_nodes(cDir, cDoc, cCfg) != ok {
+	if C.chunk_your_skills_repair_skill_nodes(cDir, cDoc, cCfg) != ok {
 		return lastError()
 	}
 	return nil
@@ -185,7 +185,7 @@ func cgoSkillsIndexFromDecomposedDir(dir string) (string, error) {
 	cDir := cString(dir)
 	defer freeCString(cDir)
 	var out *C.char
-	if C.cyt_skills_index_from_decomposed_dir(cDir, &out) != ok {
+	if C.chunk_your_skills_skills_index_from_decomposed_dir(cDir, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -199,7 +199,7 @@ func cgoMdToTree(markdownContent, sourcePath, configJSON string) (string, error)
 	cCfg := cString(configJSON)
 	defer freeCString(cCfg)
 	var out *C.char
-	if C.cyt_md_to_tree(cMd, cPath, cCfg, &out) != ok {
+	if C.chunk_your_skills_md_to_tree(cMd, cPath, cCfg, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -211,7 +211,7 @@ func cgoGetSkillDocument(documentsJSON, docID string) (string, error) {
 	cDoc := cString(docID)
 	defer freeCString(cDoc)
 	var out *C.char
-	if C.cyt_get_skill_document(cDocs, cDoc, &out) != ok {
+	if C.chunk_your_skills_get_skill_document(cDocs, cDoc, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -223,7 +223,7 @@ func cgoGetSkillStructure(documentsJSON, docID string) (string, error) {
 	cDoc := cString(docID)
 	defer freeCString(cDoc)
 	var out *C.char
-	if C.cyt_get_skill_structure(cDocs, cDoc, &out) != ok {
+	if C.chunk_your_skills_get_skill_structure(cDocs, cDoc, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -237,7 +237,7 @@ func cgoGetSkillLineContentFromSpec(indexOrDocsJSON, docID, lineNumSpec string) 
 	cSpec := cString(lineNumSpec)
 	defer freeCString(cSpec)
 	var out *C.char
-	if C.cyt_get_skill_line_content_from_spec(cIndex, cDoc, cSpec, &out) != ok {
+	if C.chunk_your_skills_get_skill_line_content_from_spec(cIndex, cDoc, cSpec, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -255,7 +255,7 @@ func cgoGetSkillContentRetrieveResult(indexOrDocsJSON, docID, lineNumSpecsJSON, 
 	cOpts := cString(optionsJSON)
 	defer freeCString(cOpts)
 	var out *C.char
-	if C.cyt_get_skill_content_retrieve_result(cIndex, cDoc, cLines, cNodes, cOpts, &out) != ok {
+	if C.chunk_your_skills_get_skill_content_retrieve_result(cIndex, cDoc, cLines, cNodes, cOpts, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -273,7 +273,7 @@ func cgoReconstructSkillMarkdown(indexOrDocsJSON, docID, lineNumSpecsJSON, nodeI
 	cOpts := cString(optionsJSON)
 	defer freeCString(cOpts)
 	var out *C.char
-	if C.cyt_reconstruct_skill_markdown(cIndex, cDoc, cLines, cNodes, cOpts, &out) != ok {
+	if C.chunk_your_skills_reconstruct_skill_markdown(cIndex, cDoc, cLines, cNodes, cOpts, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -293,7 +293,7 @@ func cgoWriteReconstructedSkill(catalogDir, indexOrDocsJSON, docID, lineNumSpecs
 	cOpts := cString(optionsJSON)
 	defer freeCString(cOpts)
 	var out *C.char
-	if C.cyt_write_reconstructed_skill(cDir, cIndex, cDoc, cLines, cNodes, cOpts, &out) != ok {
+	if C.chunk_your_skills_write_reconstructed_skill(cDir, cIndex, cDoc, cLines, cNodes, cOpts, &out) != ok {
 		return lastError()
 	}
 	_, err := takeJSON(&out)
@@ -310,7 +310,7 @@ func cgoGetSkillLineContent(indexOrDocsJSON, docID, lineNumSpecsJSON, nodeIDSpec
 	cNodes := cString(nodeIDSpecsJSON)
 	defer freeCString(cNodes)
 	var out *C.char
-	if C.cyt_get_skill_line_content(cIndex, cDoc, cLines, cNodes, &out) != ok {
+	if C.chunk_your_skills_get_skill_line_content(cIndex, cDoc, cLines, cNodes, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -324,7 +324,7 @@ func cgoParseSkillNodeIDs(spec string) (string, error) {
 	cSpec := cString(spec)
 	defer freeCString(cSpec)
 	var out *C.char
-	if C.cyt_parse_skill_node_ids(cSpec, &out) != ok {
+	if C.chunk_your_skills_parse_skill_node_ids(cSpec, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -334,7 +334,7 @@ func cgoTokenCountFromDecomposedFrontmatter(content string) (int64, bool, error)
 	cContent := cString(content)
 	defer freeCString(cContent)
 	var out C.long
-	if C.cyt_token_count_from_decomposed_frontmatter(cContent, &out) != ok {
+	if C.chunk_your_skills_token_count_from_decomposed_frontmatter(cContent, &out) != ok {
 		return 0, false, lastError()
 	}
 	if out < 0 {
@@ -347,7 +347,7 @@ func cgoParseFrontmatterFields(content string) (string, error) {
 	cContent := cString(content)
 	defer freeCString(cContent)
 	var out *C.char
-	if C.cyt_parse_frontmatter_fields(cContent, &out) != ok {
+	if C.chunk_your_skills_parse_frontmatter_fields(cContent, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -359,7 +359,7 @@ func cgoFrontmatterField(content, key string) (string, error) {
 	cKey := cString(key)
 	defer freeCString(cKey)
 	var out *C.char
-	if C.cyt_frontmatter_field(cContent, cKey, &out) != ok {
+	if C.chunk_your_skills_frontmatter_field(cContent, cKey, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -367,7 +367,7 @@ func cgoFrontmatterField(content, key string) (string, error) {
 
 func cgoReconstructOptionsDefault() (string, error) {
 	var out *C.char
-	if C.cyt_reconstruct_options_default(&out) != ok {
+	if C.chunk_your_skills_reconstruct_options_default(&out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -389,7 +389,7 @@ func cgoEnsureSkillsRegistry(sourcePathsJSON, catalogRoot, pageindexConfigJSON, 
 		defer freeCString(cPolicy)
 	}
 	var out *C.char
-	if C.cyt_ensure_skills_registry(cPaths, cRoot, cCfg, cPolicy, &out) != ok {
+	if C.chunk_your_skills_ensure_skills_registry(cPaths, cRoot, cCfg, cPolicy, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -401,7 +401,7 @@ func cgoBuildPageIndexOnly(skillDirsJSON, configJSON string) (string, error) {
 	cCfg := cString(configJSON)
 	defer freeCString(cCfg)
 	var out *C.char
-	if C.cyt_build_page_index_only(cDirs, cCfg, &out) != ok {
+	if C.chunk_your_skills_build_page_index_only(cDirs, cCfg, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -413,7 +413,7 @@ func cgoPageIndexValid(entryDir, contentSHA256 string) (bool, error) {
 	cHash := cString(contentSHA256)
 	defer freeCString(cHash)
 	var out C.int
-	if C.cyt_page_index_valid(cEntry, cHash, &out) != ok {
+	if C.chunk_your_skills_page_index_valid(cEntry, cHash, &out) != ok {
 		return false, lastError()
 	}
 	return out != 0, nil
@@ -425,7 +425,7 @@ func cgoLoadSkillsIndexFromEntry(entryDir, docID, _ string) (string, error) {
 	cDoc := cString(docID)
 	defer freeCString(cDoc)
 	var out *C.char
-	if C.cyt_load_skills_index_from_entry(cEntry, cDoc, &out) != ok {
+	if C.chunk_your_skills_load_skills_index_from_entry(cEntry, cDoc, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -437,7 +437,7 @@ func cgoLoadMergedSkillDocumentJSON(entryDir, docID, _ string) (string, error) {
 	cDoc := cString(docID)
 	defer freeCString(cDoc)
 	var out *C.char
-	if C.cyt_load_merged_skill_document_json(cEntry, cDoc, &out) != ok {
+	if C.chunk_your_skills_load_merged_skill_document_json(cEntry, cDoc, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -459,7 +459,7 @@ func cgoFinalizeSkillDocumentJSON(entryDir, docID, contentSHA256, pipeline, inde
 	cSource := cString(sourcePath)
 	defer freeCString(cSource)
 	var out *C.char
-	if C.cyt_finalize_skill_document_json(cEntry, cDoc, cHash, cPipeline, cParams, cBuilt, cSource, &out) != ok {
+	if C.chunk_your_skills_finalize_skill_document_json(cEntry, cDoc, cHash, cPipeline, cParams, cBuilt, cSource, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -473,7 +473,7 @@ func cgoUpdateSkillDocumentSourcePath(entryDir, docID, sourcePath string) (strin
 	cSource := cString(sourcePath)
 	defer freeCString(cSource)
 	var out *C.char
-	if C.cyt_update_skill_document_source_path(cEntry, cDoc, cSource, &out) != ok {
+	if C.chunk_your_skills_update_skill_document_source_path(cEntry, cDoc, cSource, &out) != ok {
 		return "", lastError()
 	}
 	return takeJSON(&out)
@@ -485,7 +485,7 @@ func cgoConfigureMemoryCache(configJSON string) error {
 		cCfg = cString(configJSON)
 		defer freeCString(cCfg)
 	}
-	if C.cyt_configure_memory_cache(cCfg) != ok {
+	if C.chunk_your_skills_configure_memory_cache(cCfg) != ok {
 		return lastError()
 	}
 	return nil

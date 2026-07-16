@@ -4,29 +4,31 @@
 
 int main(void) {
     char *out = NULL;
-    int code = cyt_md_to_tree(NULL, "skill.md", "{}", &out);
-    if (code == CYT_CYT_OK) {
+    int code = chunk_your_skills_md_to_tree(NULL, "skill.md", "{}", &out);
+    if (code == CHUNK_YOUR_SKILLS_OK) {
         fprintf(stderr, "expected failure for NULL markdown_content\n");
-        cyt_example_free(cyt_example_take(&out));
+        chunk_your_skills_example_free(chunk_your_skills_example_take(&out));
         return 1;
     }
 
-    const char *err = cyt_get_last_error();
+    const char *err = chunk_your_skills_get_last_error();
     if (err == NULL || err[0] == '\0') {
         fprintf(stderr, "expected thread-local error message\n");
         return 1;
     }
 
-    cyt_clear_error();
-    if (cyt_get_last_error() != NULL) {
-        fprintf(stderr, "cyt_clear_error did not clear message\n");
+    chunk_your_skills_clear_error();
+    if (chunk_your_skills_get_last_error() != NULL) {
+        fprintf(stderr,
+                "chunk_your_skills_clear_error did not clear message\n");
         return 1;
     }
 
-    code = cyt_md_to_tree("not markdown only", "skill.md", "not-json", &out);
-    if (code == CYT_CYT_OK) {
+    code = chunk_your_skills_md_to_tree("not markdown only", "skill.md",
+                                        "not-json", &out);
+    if (code == CHUNK_YOUR_SKILLS_OK) {
         fprintf(stderr, "expected config parse failure\n");
-        cyt_example_free(cyt_example_take(&out));
+        chunk_your_skills_example_free(chunk_your_skills_example_take(&out));
         return 1;
     }
 

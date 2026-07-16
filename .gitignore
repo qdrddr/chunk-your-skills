@@ -130,7 +130,7 @@ sdk/e2e/go/go.sum
 sdk/c/**/*.o
 sdk/c/**/*.obj
 sdk/c/**/*.exe
-sdk/c/cyt_example_*
+sdk/c/chunk_your_skills_example_*
 sdk/c/compile_commands.json
 
 # Go SDK local build/test artifacts
@@ -139,11 +139,10 @@ sdk/go/coverage.out
 sdk/go/coverage.html
 sdk/go/vendor/
 .postman/
-.cursor/rules/cyt-injection.mdc
+.cursor/rules/chunk-your-skills-injection.mdc
 graphify-out
 graphify-out/cost.json
 graphify-out/cache/
-.debug/rules/cyt-injection.mdc
+.debug/rules/chunk-your-skills-injection.mdc
 .git_old
 .gitnexus/
-

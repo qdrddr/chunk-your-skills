@@ -1,7 +1,7 @@
 //! C FFI bindings for chunk-your-skills.
 //!
-//! All exported functions use `cyt_*` naming and C-style return codes.
-//! JSON outputs are written to `char**` out parameters; free with [`cyt_free_string`].
+//! All exported functions use `chunk_your_skills_*` naming and C-style return codes.
+//! JSON outputs are written to `char**` out parameters; free with [`chunk_your_skills_free_string`].
 #![allow(unsafe_op_in_unsafe_fn)]
 
 mod cache;
@@ -12,13 +12,16 @@ mod pageindex;
 mod paths;
 
 pub use error::{
-    CYT_ERR_ALLOC, CYT_ERR_INVALID_ARG, CYT_ERR_INVALID_HANDLE, CYT_ERR_INVALID_UTF8, CYT_ERR_IO,
-    CYT_ERR_JSON, CYT_ERR_NULL_PTR, CYT_ERR_PANIC, CYT_OK, cyt_clear_error, cyt_get_last_error,
+    ERR_ALLOC, ERR_INVALID_ARG, ERR_INVALID_HANDLE, ERR_INVALID_UTF8, ERR_IO, ERR_JSON,
+    ERR_NULL_PTR, ERR_PANIC, OK, chunk_your_skills_clear_error, chunk_your_skills_get_last_error,
 };
-pub use memory::{cyt_free_string, cyt_get_version};
+pub use memory::{chunk_your_skills_free_string, chunk_your_skills_get_version};
 
-pub use cache::{cyt_configure_memory_cache, cyt_ensure_skills_registry};
+pub use cache::{
+    chunk_your_skills_configure_memory_cache, chunk_your_skills_ensure_skills_registry,
+};
 pub use pageindex::{
-    CytSkillsBuilder, cyt_frontmatter_field, cyt_parse_frontmatter_fields,
-    cyt_token_count_from_decomposed_frontmatter,
+    ChunkYourSkillsBuilder, chunk_your_skills_frontmatter_field,
+    chunk_your_skills_parse_frontmatter_fields,
+    chunk_your_skills_token_count_from_decomposed_frontmatter,
 };

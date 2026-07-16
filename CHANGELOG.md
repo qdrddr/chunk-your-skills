@@ -5,6 +5,15 @@ All notable changes to **chunk-your-skills** are documented here. Version number
 
 ---
 
+## 2.0.0
+
+Breaking rename to remove legacy three-letter prefixes that collided with other projects:
+
+- C FFI exports use `chunk_your_skills_*` functions and `CHUNK_YOUR_SKILLS_*` constants.
+- Public env vars use `CHUNK_YOUR_SKILLS_*` (for example `CHUNK_YOUR_SKILLS_RELEASE_VERSION`, `CHUNK_YOUR_SKILLS_CACHE_*`).
+- Internal dev tooling keeps `CYS_*` where already established (CMake `CYS::chunk_your_skills`).
+- Added `scripts/check_no_legacy_prefix.sh` and a pre-commit hook to prevent regressions.
+
 ## 1.0.9
 
 - Granular GitHub Actions E2E workflows for published crates, PyPI, npm, Go, and C packages.
@@ -34,7 +43,7 @@ All notable changes to **chunk-your-skills** are documented here. Version number
 
 - Multi-language SDK publish pipeline (crates.io, PyPI, npm, GitHub Release C/Go assets).
 - Version sync across Rust, Python, TypeScript, Go, and CMake manifests.
-- Renamed release artifact env var to `CYT_RELEASE_VERSION`.
+- Renamed release artifact env var to `CHUNK_YOUR_SKILLS_RELEASE_VERSION`.
 
 ## 1.0.1
 

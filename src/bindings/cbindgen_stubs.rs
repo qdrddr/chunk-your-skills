@@ -6,21 +6,21 @@
 use std::os::raw::{c_char, c_int};
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_path_md_ext(out: *mut *mut c_char) -> c_int {
+pub unsafe extern "C" fn chunk_your_skills_path_md_ext(out: *mut *mut c_char) -> c_int {
     0
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_path_skills_decomposed_prefix(out: *mut *mut c_char) -> c_int {
+pub unsafe extern "C" fn chunk_your_skills_path_skills_decomposed_prefix(out: *mut *mut c_char) -> c_int {
     0
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_path_skills_decomposed_root(out: *mut *mut c_char) -> c_int {
+pub unsafe extern "C" fn chunk_your_skills_path_skills_decomposed_root(out: *mut *mut c_char) -> c_int {
     0
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_path_default_catalog_dir(out: *mut *mut c_char) -> c_int {
+pub unsafe extern "C" fn chunk_your_skills_path_default_catalog_dir(out: *mut *mut c_char) -> c_int {
     0
 }

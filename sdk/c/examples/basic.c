@@ -7,18 +7,19 @@ int main(void) {
     const char *skill_dirs = "[]";
     const char *config = "{}";
 
-    if (!cyt_example_ok(cyt_build_skills_index(skill_dirs, config, &out),
-                        "cyt_build_skills_index")) {
+    if (!chunk_your_skills_example_ok(
+            chunk_your_skills_build_skills_index(skill_dirs, config, &out),
+            "chunk_your_skills_build_skills_index")) {
         return 1;
     }
 
-    char *json = cyt_example_take(&out);
+    char *json = chunk_your_skills_example_take(&out);
     if (json == NULL || strstr(json, "\"files\"") == NULL) {
         fprintf(stderr, "unexpected skills index JSON\n");
-        cyt_example_free(json);
+        chunk_your_skills_example_free(json);
         return 1;
     }
-    cyt_example_free(json);
+    chunk_your_skills_example_free(json);
 
     printf("basic: build_skills_index ok\n");
     return 0;

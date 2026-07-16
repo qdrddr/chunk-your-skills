@@ -75,7 +75,7 @@ func mingwImportLibName(triplet string) string {
 }
 
 func resolveTriplet() (string, error) {
-	if env := strings.TrimSpace(os.Getenv("CYT_RUST_TARGET")); env != "" {
+	if env := strings.TrimSpace(os.Getenv("CHUNK_YOUR_SKILLS_RUST_TARGET")); env != "" {
 		if err := validateTriplet(env); err != nil {
 			return "", err
 		}

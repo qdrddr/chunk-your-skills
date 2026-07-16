@@ -1,8 +1,7 @@
 //! `PageIndex` / skills FFI exports (mirrors `pageindex_python.rs`).
 
 use crate::ffi::error::{
-    CYT_ERR_INVALID_ARG, CYT_ERR_INVALID_HANDLE, CYT_ERR_IO, CYT_ERR_NULL_PTR, clear_error,
-    set_error,
+    ERR_INVALID_ARG, ERR_INVALID_HANDLE, ERR_IO, ERR_NULL_PTR, clear_error, set_error,
 };
 use crate::ffi::json_util::{
     c_str_to_str, json_array_or_empty, parse_json_cstr, run_ffi, write_json_out,
@@ -30,7 +29,7 @@ use std::os::raw::{c_char, c_int, c_long};
 use std::path::PathBuf;
 
 /// Opaque skills builder handle.
-pub struct CytSkillsBuilder {
+pub struct ChunkYourSkillsBuilder {
     pub(crate) inner: SkillsBuilder,
 }
 
@@ -86,12 +85,12 @@ fn skills_index_from_json(val: &Value) -> Result<SkillsIndex, c_int> {
     let mut skills = SkillsIndex::default();
     let obj = val.as_object().ok_or_else(|| {
         set_error("documents must be a JSON object");
-        CYT_ERR_INVALID_ARG
+        ERR_INVALID_ARG
     })?;
     for (doc_id, doc_val) in obj {
         let Some(doc) = SkillDocument::from_json(doc_val) else {
             set_error(&format!("invalid document {doc_id}"));
-            return Err(CYT_ERR_INVALID_ARG);
+            return Err(ERR_INVALID_ARG);
         };
         skills.documents.insert(doc_id.clone(), doc);
     }
@@ -101,13 +100,13 @@ fn skills_index_from_json(val: &Value) -> Result<SkillsIndex, c_int> {
 fn documents_map_from_json(val: &Value) -> Result<HashMap<String, SkillDocument>, c_int> {
     let obj = val.as_object().ok_or_else(|| {
         set_error("documents must be a JSON object");
-        CYT_ERR_INVALID_ARG
+        ERR_INVALID_ARG
     })?;
     let mut out = HashMap::new();
     for (doc_id, doc_val) in obj {
         let Some(doc) = SkillDocument::from_json(doc_val) else {
             set_error(&format!("invalid document {doc_id}"));
-            return Err(CYT_ERR_INVALID_ARG);
+            return Err(ERR_INVALID_ARG);
         };
         out.insert(doc_id.clone(), doc);
     }
@@ -139,7 +138,7 @@ fn string_specs_from_json(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_build_skills_index(
+pub unsafe extern "C" fn chunk_your_skills_build_skills_index(
     skill_dirs_json: *const c_char,
     config_json: *const c_char,
     out: *mut *mut c_char,
@@ -147,13 +146,13 @@ pub unsafe extern "C" fn cyt_build_skills_index(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let dirs = skill_dirs_from_json(skill_dirs_json)?;
         let cfg = page_index_config_from_json(config_json)?;
         let index = build_skills_index(&dirs, &cfg).map_err(|e| {
             set_error(&e);
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         unsafe { write_json_out(&skills_index_to_json(&index), out)? };
         Ok(())
@@ -161,7 +160,7 @@ pub unsafe extern "C" fn cyt_build_skills_index(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_write_skills_index(
+pub unsafe extern "C" fn chunk_your_skills_write_skills_index(
     index_json: *const c_char,
     output_dir: *const c_char,
 ) -> c_int {
@@ -171,7 +170,7 @@ pub unsafe extern "C" fn cyt_write_skills_index(
         let dir = PathBuf::from(unsafe { c_str_to_str(output_dir, "output_dir")? });
         write_skills_index(&skills, dir.as_path()).map_err(|e| {
             set_error(&e);
-            CYT_ERR_IO
+            ERR_IO
         })?;
         clear_error();
         Ok(())
@@ -179,19 +178,19 @@ pub unsafe extern "C" fn cyt_write_skills_index(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_load_skills_index_from_dir(
+pub unsafe extern "C" fn chunk_your_skills_load_skills_index_from_dir(
     catalog_dir: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let dir = PathBuf::from(unsafe { c_str_to_str(catalog_dir, "catalog_dir")? });
         let index = load_skills_index_from_dir(dir.as_path()).map_err(|e| {
             set_error(&e);
-            CYT_ERR_IO
+            ERR_IO
         })?;
         unsafe { write_json_out(&skills_index_to_json(&index), out)? };
         Ok(())
@@ -199,7 +198,7 @@ pub unsafe extern "C" fn cyt_load_skills_index_from_dir(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_repair_skill_nodes(
+pub unsafe extern "C" fn chunk_your_skills_repair_skill_nodes(
     entry_dir: *const c_char,
     doc_id: *const c_char,
     config_json: *const c_char,
@@ -210,7 +209,7 @@ pub unsafe extern "C" fn cyt_repair_skill_nodes(
         let cfg = page_index_config_from_json(config_json)?;
         repair_skill_nodes(dir.as_path(), doc, &cfg).map_err(|e| {
             set_error(&e);
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         clear_error();
         Ok(())
@@ -218,19 +217,19 @@ pub unsafe extern "C" fn cyt_repair_skill_nodes(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_index_from_decomposed_dir(
+pub unsafe extern "C" fn chunk_your_skills_skills_index_from_decomposed_dir(
     dir: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let path = PathBuf::from(unsafe { c_str_to_str(dir, "dir")? });
         let index = skills_index_from_decomposed_dir(path.as_path()).map_err(|e| {
             set_error(&e);
-            CYT_ERR_IO
+            ERR_IO
         })?;
         unsafe { write_json_out(&skills_index_to_json(&index), out)? };
         Ok(())
@@ -238,7 +237,7 @@ pub unsafe extern "C" fn cyt_skills_index_from_decomposed_dir(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_md_to_tree(
+pub unsafe extern "C" fn chunk_your_skills_md_to_tree(
     markdown_content: *const c_char,
     source_path: *const c_char,
     config_json: *const c_char,
@@ -247,7 +246,7 @@ pub unsafe extern "C" fn cyt_md_to_tree(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let md = unsafe { c_str_to_str(markdown_content, "markdown_content")? };
         let source = unsafe { c_str_to_str(source_path, "source_path")? };
@@ -268,7 +267,7 @@ pub unsafe extern "C" fn cyt_md_to_tree(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_get_skill_document(
+pub unsafe extern "C" fn chunk_your_skills_get_skill_document(
     documents_json: *const c_char,
     doc_id: *const c_char,
     out: *mut *mut c_char,
@@ -276,7 +275,7 @@ pub unsafe extern "C" fn cyt_get_skill_document(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { parse_json_cstr(documents_json, "documents_json")? };
         let docs = documents_map_from_json(&val)?;
@@ -287,7 +286,7 @@ pub unsafe extern "C" fn cyt_get_skill_document(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_get_skill_structure(
+pub unsafe extern "C" fn chunk_your_skills_get_skill_structure(
     documents_json: *const c_char,
     doc_id: *const c_char,
     out: *mut *mut c_char,
@@ -295,7 +294,7 @@ pub unsafe extern "C" fn cyt_get_skill_structure(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { parse_json_cstr(documents_json, "documents_json")? };
         let docs = documents_map_from_json(&val)?;
@@ -306,7 +305,7 @@ pub unsafe extern "C" fn cyt_get_skill_structure(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_get_skill_line_content_from_spec(
+pub unsafe extern "C" fn chunk_your_skills_get_skill_line_content_from_spec(
     index_or_docs_json: *const c_char,
     doc_id: *const c_char,
     line_num_spec: *const c_char,
@@ -315,7 +314,7 @@ pub unsafe extern "C" fn cyt_get_skill_line_content_from_spec(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { parse_json_cstr(index_or_docs_json, "index_or_docs_json")? };
         let index = skills_index_from_json(&val)?;
@@ -327,7 +326,7 @@ pub unsafe extern "C" fn cyt_get_skill_line_content_from_spec(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_get_skill_content_retrieve_result(
+pub unsafe extern "C" fn chunk_your_skills_get_skill_content_retrieve_result(
     index_or_docs_json: *const c_char,
     doc_id: *const c_char,
     line_num_specs_json: *const c_char,
@@ -338,7 +337,7 @@ pub unsafe extern "C" fn cyt_get_skill_content_retrieve_result(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { parse_json_cstr(index_or_docs_json, "index_or_docs_json")? };
         let index = skills_index_from_json(&val)?;
@@ -364,7 +363,7 @@ pub unsafe extern "C" fn cyt_get_skill_content_retrieve_result(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_reconstruct_skill_markdown(
+pub unsafe extern "C" fn chunk_your_skills_reconstruct_skill_markdown(
     index_or_docs_json: *const c_char,
     doc_id: *const c_char,
     line_num_specs_json: *const c_char,
@@ -375,7 +374,7 @@ pub unsafe extern "C" fn cyt_reconstruct_skill_markdown(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { parse_json_cstr(index_or_docs_json, "index_or_docs_json")? };
         let index = skills_index_from_json(&val)?;
@@ -388,7 +387,7 @@ pub unsafe extern "C" fn cyt_reconstruct_skill_markdown(
             reconstruct_skill_markdown(&index, doc, &specs.line_refs(), &specs.node_refs(), &opts)
                 .map_err(|e| {
                     set_error(&e);
-                    CYT_ERR_INVALID_ARG
+                    ERR_INVALID_ARG
                 })?;
         unsafe {
             write_json_out(
@@ -406,7 +405,7 @@ pub unsafe extern "C" fn cyt_reconstruct_skill_markdown(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_write_reconstructed_skill(
+pub unsafe extern "C" fn chunk_your_skills_write_reconstructed_skill(
     catalog_dir: *const c_char,
     index_or_docs_json: *const c_char,
     doc_id: *const c_char,
@@ -418,7 +417,7 @@ pub unsafe extern "C" fn cyt_write_reconstructed_skill(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let dir = PathBuf::from(unsafe { c_str_to_str(catalog_dir, "catalog_dir")? });
         let val = unsafe { parse_json_cstr(index_or_docs_json, "index_or_docs_json")? };
@@ -438,7 +437,7 @@ pub unsafe extern "C" fn cyt_write_reconstructed_skill(
         )
         .map_err(|e| {
             set_error(&e);
-            CYT_ERR_IO
+            ERR_IO
         })?;
         unsafe { write_string_result(&output.display().to_string(), out)? };
         Ok(())
@@ -446,7 +445,7 @@ pub unsafe extern "C" fn cyt_write_reconstructed_skill(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_get_skill_line_content(
+pub unsafe extern "C" fn chunk_your_skills_get_skill_line_content(
     index_or_docs_json: *const c_char,
     doc_id: *const c_char,
     line_num_specs_json: *const c_char,
@@ -456,7 +455,7 @@ pub unsafe extern "C" fn cyt_get_skill_line_content(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { parse_json_cstr(index_or_docs_json, "index_or_docs_json")? };
         let index = skills_index_from_json(&val)?;
@@ -475,19 +474,19 @@ pub unsafe extern "C" fn cyt_get_skill_line_content(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_parse_skill_node_ids(
+pub unsafe extern "C" fn chunk_your_skills_parse_skill_node_ids(
     spec: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let s = unsafe { c_str_to_str(spec, "spec")? };
         let ids = parse_node_ids(s).map_err(|e| {
             set_error(&e);
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         unsafe { write_json_out(&json!(ids), out)? };
         Ok(())
@@ -501,14 +500,14 @@ pub unsafe extern "C" fn cyt_parse_skill_node_ids(
 /// `content` must be a valid null-terminated UTF-8 C string, or null (returns error).
 /// `out` must be a valid mutable pointer to receive the token count, or null (returns error).
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_token_count_from_decomposed_frontmatter(
+pub unsafe extern "C" fn chunk_your_skills_token_count_from_decomposed_frontmatter(
     content: *const c_char,
     out: *mut c_long,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let text = unsafe { c_str_to_str(content, "content")? };
         let count = crate::pageindex::token_count_from_decomposed_frontmatter(text);
@@ -528,14 +527,14 @@ pub unsafe extern "C" fn cyt_token_count_from_decomposed_frontmatter(
 /// `content` must be a valid null-terminated UTF-8 C string, or null (returns error).
 /// `out` must be a valid mutable pointer to receive the JSON output string, or null (returns error).
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_parse_frontmatter_fields(
+pub unsafe extern "C" fn chunk_your_skills_parse_frontmatter_fields(
     content: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let text = unsafe { c_str_to_str(content, "content")? };
         let value = parse_frontmatter_fields(text).map_or(Value::Null, Value::Array);
@@ -551,7 +550,7 @@ pub unsafe extern "C" fn cyt_parse_frontmatter_fields(
 /// `content` and `key` must be valid null-terminated UTF-8 C strings, or null (returns error).
 /// `out` must be a valid mutable pointer to receive the JSON output string, or null (returns error).
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_frontmatter_field(
+pub unsafe extern "C" fn chunk_your_skills_frontmatter_field(
     content: *const c_char,
     key: *const c_char,
     out: *mut *mut c_char,
@@ -559,7 +558,7 @@ pub unsafe extern "C" fn cyt_frontmatter_field(
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let text = unsafe { c_str_to_str(content, "content")? };
         let field_key = unsafe { c_str_to_str(key, "key")? };
@@ -571,15 +570,15 @@ pub unsafe extern "C" fn cyt_frontmatter_field(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_builder_new(
+pub unsafe extern "C" fn chunk_your_skills_skills_builder_new(
     memory_only: c_int,
     output_dir: *const c_char,
-    out: *mut *mut CytSkillsBuilder,
+    out: *mut *mut ChunkYourSkillsBuilder,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let dir = if output_dir.is_null() {
             None
@@ -589,7 +588,7 @@ pub unsafe extern "C" fn cyt_skills_builder_new(
             }))
         };
         unsafe {
-            *out = Box::into_raw(Box::new(CytSkillsBuilder {
+            *out = Box::into_raw(Box::new(ChunkYourSkillsBuilder {
                 inner: SkillsBuilder::new(memory_only != 0, dir),
             }));
         }
@@ -599,7 +598,9 @@ pub unsafe extern "C" fn cyt_skills_builder_new(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_builder_free(builder: *mut CytSkillsBuilder) {
+pub unsafe extern "C" fn chunk_your_skills_skills_builder_free(
+    builder: *mut ChunkYourSkillsBuilder,
+) {
     if !builder.is_null() {
         unsafe {
             let _ = Box::from_raw(builder);
@@ -608,8 +609,8 @@ pub unsafe extern "C" fn cyt_skills_builder_free(builder: *mut CytSkillsBuilder)
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_builder_build_from_dirs(
-    builder: *mut CytSkillsBuilder,
+pub unsafe extern "C" fn chunk_your_skills_skills_builder_build_from_dirs(
+    builder: *mut ChunkYourSkillsBuilder,
     skill_dirs_json: *const c_char,
     config_json: *const c_char,
     out: *mut *mut c_char,
@@ -617,17 +618,17 @@ pub unsafe extern "C" fn cyt_skills_builder_build_from_dirs(
     run_ffi(|| {
         if builder.is_null() {
             set_error("null pointer: builder");
-            return Err(CYT_ERR_INVALID_HANDLE);
+            return Err(ERR_INVALID_HANDLE);
         }
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let dirs = skill_dirs_from_json(skill_dirs_json)?;
         let cfg = page_index_config_from_json(config_json)?;
         let index = unsafe { (*builder).inner.build_from_dirs(&dirs, &cfg) }.map_err(|e| {
             set_error(&e);
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         unsafe { write_json_out(&skills_index_to_json(index), out)? };
         Ok(())
@@ -635,22 +636,22 @@ pub unsafe extern "C" fn cyt_skills_builder_build_from_dirs(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_builder_write_catalog(
-    builder: *mut CytSkillsBuilder,
+pub unsafe extern "C" fn chunk_your_skills_skills_builder_write_catalog(
+    builder: *mut ChunkYourSkillsBuilder,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if builder.is_null() {
             set_error("null pointer: builder");
-            return Err(CYT_ERR_INVALID_HANDLE);
+            return Err(ERR_INVALID_HANDLE);
         }
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let index = unsafe { (*builder).inner.write_catalog() }.map_err(|e| {
             set_error(&e);
-            CYT_ERR_IO
+            ERR_IO
         })?;
         unsafe { write_json_out(&skills_index_to_json(index), out)? };
         Ok(())
@@ -658,22 +659,22 @@ pub unsafe extern "C" fn cyt_skills_builder_write_catalog(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_builder_to_skills_index_json(
-    builder: *const CytSkillsBuilder,
+pub unsafe extern "C" fn chunk_your_skills_skills_builder_to_skills_index_json(
+    builder: *const ChunkYourSkillsBuilder,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if builder.is_null() {
             set_error("null pointer: builder");
-            return Err(CYT_ERR_INVALID_HANDLE);
+            return Err(ERR_INVALID_HANDLE);
         }
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { (*builder).inner.to_skills_index_json() }.ok_or_else(|| {
             set_error("index not built");
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         unsafe { write_json_out(&val, out)? };
         Ok(())
@@ -681,22 +682,22 @@ pub unsafe extern "C" fn cyt_skills_builder_to_skills_index_json(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_skills_builder_to_skills_dict(
-    builder: *const CytSkillsBuilder,
+pub unsafe extern "C" fn chunk_your_skills_skills_builder_to_skills_dict(
+    builder: *const ChunkYourSkillsBuilder,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if builder.is_null() {
             set_error("null pointer: builder");
-            return Err(CYT_ERR_INVALID_HANDLE);
+            return Err(ERR_INVALID_HANDLE);
         }
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let val = unsafe { (*builder).inner.to_skills_dict() }.ok_or_else(|| {
             set_error("index not built");
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         unsafe { write_json_out(&val, out)? };
         Ok(())
@@ -704,11 +705,13 @@ pub unsafe extern "C" fn cyt_skills_builder_to_skills_dict(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_reconstruct_options_default(out: *mut *mut c_char) -> c_int {
+pub unsafe extern "C" fn chunk_your_skills_reconstruct_options_default(
+    out: *mut *mut c_char,
+) -> c_int {
     run_ffi(|| {
         if out.is_null() {
             set_error("null pointer: out");
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         unsafe { write_json_out(&json!({ "keep_all_headers": false }), out)? };
         Ok(())
@@ -716,14 +719,14 @@ pub unsafe extern "C" fn cyt_reconstruct_options_default(out: *mut *mut c_char) 
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_build_page_index_only(
+pub unsafe extern "C" fn chunk_your_skills_build_page_index_only(
     skill_dirs_json: *const c_char,
     config_json: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let dirs_val = parse_json_cstr(skill_dirs_json, "skill_dirs_json")?;
         let dirs: Vec<PathBuf> = dirs_val
@@ -736,7 +739,7 @@ pub unsafe extern "C" fn cyt_build_page_index_only(
         let cfg = page_index_config_from_json(config_json)?;
         let index = build_page_index_only(&dirs, &cfg).map_err(|e| {
             set_error(&e);
-            CYT_ERR_INVALID_ARG
+            ERR_INVALID_ARG
         })?;
         unsafe { write_json_out(&skills_index_to_json(&index), out)? };
         Ok(())
@@ -744,14 +747,14 @@ pub unsafe extern "C" fn cyt_build_page_index_only(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_page_index_valid(
+pub unsafe extern "C" fn chunk_your_skills_page_index_valid(
     entry_dir: *const c_char,
     content_sha256: *const c_char,
     out: *mut c_int,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let hash = c_str_to_str(content_sha256, "content_sha256")?;
@@ -764,21 +767,21 @@ pub unsafe extern "C" fn cyt_page_index_valid(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_load_skills_index_from_entry(
+pub unsafe extern "C" fn chunk_your_skills_load_skills_index_from_entry(
     entry_dir: *const c_char,
     doc_id: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let doc = c_str_to_str(doc_id, "doc_id")?;
         let index =
             load_skills_index_from_entry(PathBuf::from(entry).as_path(), doc).map_err(|e| {
                 set_error(&e);
-                CYT_ERR_IO
+                ERR_IO
             })?;
         unsafe { write_json_out(&skills_index_to_json(&index), out)? };
         Ok(())
@@ -786,21 +789,21 @@ pub unsafe extern "C" fn cyt_load_skills_index_from_entry(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_load_merged_skill_document_json(
+pub unsafe extern "C" fn chunk_your_skills_load_merged_skill_document_json(
     entry_dir: *const c_char,
     doc_id: *const c_char,
     out: *mut *mut c_char,
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let doc = c_str_to_str(doc_id, "doc_id")?;
         let value =
             load_merged_document_json(PathBuf::from(entry).as_path(), doc).map_err(|e| {
                 set_error(&e);
-                CYT_ERR_IO
+                ERR_IO
             })?;
         unsafe { write_json_out(&value, out)? };
         Ok(())
@@ -808,7 +811,7 @@ pub unsafe extern "C" fn cyt_load_merged_skill_document_json(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_finalize_skill_document_json(
+pub unsafe extern "C" fn chunk_your_skills_finalize_skill_document_json(
     entry_dir: *const c_char,
     doc_id: *const c_char,
     content_sha256: *const c_char,
@@ -820,7 +823,7 @@ pub unsafe extern "C" fn cyt_finalize_skill_document_json(
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let doc = c_str_to_str(doc_id, "doc_id")?;
@@ -834,7 +837,7 @@ pub unsafe extern "C" fn cyt_finalize_skill_document_json(
         let value =
             finalize_entry_metadata(PathBuf::from(entry).as_path(), &metadata).map_err(|e| {
                 set_error(&e);
-                CYT_ERR_IO
+                ERR_IO
             })?;
         unsafe { write_json_out(&value, out)? };
         Ok(())
@@ -842,7 +845,7 @@ pub unsafe extern "C" fn cyt_finalize_skill_document_json(
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn cyt_update_skill_document_source_path(
+pub unsafe extern "C" fn chunk_your_skills_update_skill_document_source_path(
     entry_dir: *const c_char,
     doc_id: *const c_char,
     source_path: *const c_char,
@@ -850,7 +853,7 @@ pub unsafe extern "C" fn cyt_update_skill_document_source_path(
 ) -> c_int {
     run_ffi(|| {
         if out.is_null() {
-            return Err(CYT_ERR_NULL_PTR);
+            return Err(ERR_NULL_PTR);
         }
         let entry = c_str_to_str(entry_dir, "entry_dir")?;
         let doc = c_str_to_str(doc_id, "doc_id")?;
@@ -858,7 +861,7 @@ pub unsafe extern "C" fn cyt_update_skill_document_source_path(
         let value = update_document_source_path(PathBuf::from(entry).as_path(), doc, path)
             .map_err(|e| {
                 set_error(&e);
-                CYT_ERR_IO
+                ERR_IO
             })?;
         unsafe { write_json_out(&value, out)? };
         Ok(())

@@ -29,7 +29,7 @@ checkout**—not the active monorepo tree (unless `--workspace` is set).
 
 Targets: `rust`, `python`, `typescript`, `go`, `c`, `all` (default).
 
-Go and C harnesses clone tag `vX.Y.Z` into `CYT_E2E_STAGING`, build `libchunk_your_skills` from the tagged root crate,
-then run isolated tests.
+Go and C harnesses clone tag `vX.Y.Z` into `CHUNK_YOUR_SKILLS_E2E_STAGING`, build
+`libchunk_your_skills` from the tagged root crate, then run isolated tests.
 
 See [`.github/workflows/`](../../.github/workflows/) for CI wiring (`e2e-published-*.yml` after publish workflows).

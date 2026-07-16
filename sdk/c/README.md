@@ -32,4 +32,4 @@ find_package(CYS REQUIRED)
 target_link_libraries(myapp PRIVATE CYS::chunk_your_skills)
 ```
 
-Include `chunk_your_skills.h` and call `cyt_build_skills_index`, etc.
+Include `chunk_your_skills.h` and call `chunk_your_skills_build_skills_index`, etc.

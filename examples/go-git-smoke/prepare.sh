@@ -3,10 +3,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VERSION="${CYT_RELEASE_VERSION:-1.1.0}"
+VERSION="${CHUNK_YOUR_SKILLS_RELEASE_VERSION:-1.1.0}"
 TAG="v${VERSION}"
-REPO="${CYT_GIT_REPO:-https://github.com/qdrddr/chunk-your-skills.git}"
-STAGING="${CYT_GIT_STAGING:-${ROOT}/.staging/${VERSION}}"
+REPO="${CHUNK_YOUR_SKILLS_GIT_REPO:-https://github.com/qdrddr/chunk-your-skills.git}"
+STAGING="${CHUNK_YOUR_SKILLS_GIT_STAGING:-${ROOT}/.staging/${VERSION}}"
 
 if [[ ! -f "${STAGING}/sdk/go/go.mod" ]]; then
 	echo "Fetching ${TAG} into ${STAGING}..." >&2
@@ -21,7 +21,7 @@ if [[ ! -f "${STAGING}/sdk/go/go.mod" ]]; then
 	)
 fi
 
-sed "s|@CYT_GIT_STAGING@|${STAGING}|g" "${ROOT}/go.mod.in" >"${ROOT}/go.mod"
+sed "s|@CHUNK_YOUR_SKILLS_GIT_STAGING@|${STAGING}|g" "${ROOT}/go.mod.in" >"${ROOT}/go.mod"
 
 MONOREPO_ROOT="$(cd "${ROOT}/../.." && pwd)"
 if [[ -f "${MONOREPO_ROOT}/sdk/go/go.mod" && -f "${MONOREPO_ROOT}/Cargo.toml" ]]; then
