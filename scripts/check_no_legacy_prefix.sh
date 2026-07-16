@@ -13,7 +13,7 @@ import re
 import sys
 
 root = pathlib.Path(".")
-skip_dirs = {"target", "node_modules", ".git", ".venv", "dist", ".gitnexus", "graphify-out", ".code-review-graph", ".codebase-memory"}
+skip_dirs = {"target", "node_modules", ".git", ".venv", "dist", ".gitnexus", "graphify-out", ".code-review-graph", ".codebase-memory", ".cursor", ".debug"}
 skip_files = {pathlib.Path("scripts/check_no_legacy_prefix.sh")}
 
 c, y, t = (chr(99), chr(121), chr(116))

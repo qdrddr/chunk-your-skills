@@ -17,7 +17,7 @@ go run ./sdk/go/cmd/chunk-native-ensure
 ## Usage
 
 ```go
-import "github.com/qdrddr/chunk-your-skills/sdk/go/chunkyourskills"
+import "github.com/qdrddr/chunk-your-skills/sdk/go/v2/chunkyourskills"
 
 version, err := chunkyourskills.Version()
 ```

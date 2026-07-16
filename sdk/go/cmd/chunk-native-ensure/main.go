@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qdrddr/chunk-your-skills/sdk/go/moduleversion"
+	"github.com/qdrddr/chunk-your-skills/sdk/go/v2/moduleversion"
 )
 
 const (

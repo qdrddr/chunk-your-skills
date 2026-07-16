@@ -124,6 +124,7 @@ sdk/e2e/typescript/package-lock.json
 sdk/e2e/typescript/node_modules/
 sdk/e2e/go/go.mod
 sdk/e2e/go/go.sum
+sdk/e2e/go/registry_smoke_test.go
 
 .catalog/
 # Stray manual C compiles (CMake uses sdk/c/build/)

@@ -3,7 +3,7 @@ package e2esupport_test
 import (
 	"testing"
 
-	chunkyourskills "github.com/qdrddr/chunk-your-skills/sdk/go"
+	chunkyourskills "@CHUNK_YOUR_SKILLS_GO_MODULE_PATH@"
 )
 
 func TestVersionFromReleaseModule(t *testing.T) {

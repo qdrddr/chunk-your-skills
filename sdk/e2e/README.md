@@ -8,7 +8,7 @@ checkout**—not the active monorepo tree (unless `--workspace` is set).
 | [`rust/`](rust/) | [crates.io](https://crates.io/crates/chunk-your-skills) | `chunk-your-skills` |
 | [`python/`](python/) | [PyPI](https://pypi.org/project/chunk-your-skills/) | `chunk-your-skills` |
 | [`typescript/`](typescript/) | [npm](https://www.npmjs.com/package/chunk-your-skills) | `chunk-your-skills` |
-| [`go/`](go/) | [GitHub tag](https://github.com/qdrddr/chunk-your-skills/tags) | `github.com/qdrddr/chunk-your-skills/sdk/go` |
+| [`go/`](go/) | [GitHub tag](https://github.com/qdrddr/chunk-your-skills/tags) | `github.com/qdrddr/chunk-your-skills/sdk/go/v2` |
 | [`c/`](c/) | [GitHub tag](https://github.com/qdrddr/chunk-your-skills/tags) | `sdk/c` + `libchunk_your_skills` built from tagged root crate |
 
 ## Local run
