@@ -286,6 +286,16 @@ mod tests {
     fn parse_node_id_variants() {
         assert_eq!(parse_node_ids("5-7"), Ok(vec![5, 6, 7]));
         assert_eq!(parse_node_ids("3,8"), Ok(vec![3, 8]));
+        assert_eq!(parse_node_ids("1-3,5,8"), Ok(vec![1, 2, 3, 5, 8]));
         assert_eq!(parse_node_ids("0012"), Ok(vec![12]));
+    }
+
+    #[test]
+    fn merge_node_id_specs_accepts_ranges_and_lists() {
+        assert_eq!(merge_node_id_specs(&["1-3,5,8"]), Ok(vec![1, 2, 3, 5, 8]));
+        assert_eq!(
+            merge_node_id_specs(&["1-3", "5", "8"]),
+            Ok(vec![1, 2, 3, 5, 8])
+        );
     }
 }

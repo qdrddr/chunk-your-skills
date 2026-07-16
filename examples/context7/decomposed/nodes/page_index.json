@@ -1,0 +1,58 @@
+{
+  "doc_name": "SKILL",
+  "frontmatter": "---\nname: context7-mcp\ndescription: This skill should be used when the user asks about libraries, frameworks, API references, or needs code examples. Activates for setup questions, code generation involving libraries, or mentions of specific frameworks like React, Vue, Next.js, Prisma, Supabase, etc.\n---",
+  "id": "skill",
+  "line_count": 53,
+  "path": "examples/context7/SKILL.md",
+  "preamble": "When the user asks about libraries, frameworks, or needs code examples, use Context7 to fetch current documentation instead of relying on training data.",
+  "structure": [
+    {
+      "kind": "frontmatter",
+      "line_num": 1,
+      "node_id": 0
+    },
+    {
+      "kind": "preamble",
+      "line_num": 6,
+      "node_id": 1
+    },
+    {
+      "line_num": 8,
+      "node_id": 2,
+      "title": "When to Use This Skill"
+    },
+    {
+      "line_num": 17,
+      "node_id": 3,
+      "nodes": [
+        {
+          "line_num": 19,
+          "node_id": 4,
+          "title": "Step 1: Resolve the Library ID"
+        },
+        {
+          "line_num": 26,
+          "node_id": 5,
+          "title": "Step 2: Select the Best Match"
+        },
+        {
+          "line_num": 34,
+          "node_id": 6,
+          "title": "Step 3: Fetch the Documentation"
+        },
+        {
+          "line_num": 41,
+          "node_id": 7,
+          "title": "Step 4: Use the Documentation"
+        }
+      ],
+      "title": "How to Fetch Documentation"
+    },
+    {
+      "line_num": 49,
+      "node_id": 8,
+      "title": "Guidelines"
+    }
+  ],
+  "type": "md"
+}

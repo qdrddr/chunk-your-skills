@@ -1,6 +1,6 @@
 use chunk_your_skills::{
     PageIndexConfig, ReconstructOptions, SkillsBuilder, load_skills_index_from_dir,
-    write_reconstructed_skill,
+    reconstruct_skill_markdown, resolve_doc_id, write_reconstructed_skill,
 };
 use clap::{Parser, Subcommand};
 use std::fs;
@@ -25,10 +25,19 @@ enum Commands {
     },
     /// Recompose a skinny SKILL.md from selected node IDs
     Recompose {
-        #[arg(long)]
-        catalog: PathBuf,
-        #[arg(long)]
-        doc_id: String,
+        /// Decomposed catalog directory (from `decompose`)
+        #[arg(long, group = "source")]
+        catalog: Option<PathBuf>,
+        /// SKILL.md file to index in memory (no catalog required)
+        #[arg(long, group = "source")]
+        skill: Option<PathBuf>,
+        /// Catalog document id (from `page_index.json` `id` field)
+        #[arg(long, group = "doc_selector", requires = "catalog")]
+        doc_id: Option<String>,
+        /// Original skill file path (from `page_index.json` `path` field)
+        #[arg(long, group = "doc_selector", requires = "catalog")]
+        path: Option<PathBuf>,
+        /// Node ids: ranges, lists, or both (e.g. `1-3,5,8`)
         #[arg(long, value_delimiter = ',')]
         node_id: Vec<String>,
         #[arg(long)]
@@ -44,17 +53,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Decompose { skill, output } => run_decompose(&skill, &output)?,
         Commands::Recompose {
             catalog,
+            skill,
             doc_id,
+            path,
             node_id,
             output,
             keep_all_headers,
-        } => run_recompose(
-            &catalog,
-            &doc_id,
-            &node_id,
-            output.as_deref(),
-            keep_all_headers,
-        )?,
+        } => match (catalog, skill) {
+            (Some(catalog), None) => run_recompose_from_catalog(
+                &catalog,
+                doc_id.as_deref(),
+                path.as_deref(),
+                &node_id,
+                output.as_deref(),
+                keep_all_headers,
+            )?,
+            (None, Some(skill)) => {
+                run_recompose_from_skill(&skill, &node_id, output.as_deref(), keep_all_headers)?;
+            }
+            _ => unreachable!("clap source group requires exactly one of --catalog or --skill"),
+        },
     }
     Ok(())
 }
@@ -85,27 +103,70 @@ fn run_decompose(skill: &Path, output: &Path) -> Result<(), Box<dyn std::error::
     Ok(())
 }
 
-fn run_recompose(
-    catalog: &Path,
-    doc_id: &str,
+fn run_recompose_from_skill(
+    skill: &Path,
     node_ids: &[String],
     output: Option<&Path>,
     keep_all_headers: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    if !skill.is_file() {
+        return Err(format!("skill file not found: {}", skill.display()).into());
+    }
+    let output = output.ok_or("--output is required when using --skill")?;
+
+    let mut builder = SkillsBuilder::new(true, None);
+    builder.build_from_file(skill, &PageIndexConfig::default())?;
+    let index = builder
+        .index()
+        .ok_or("internal error: missing skills index")?;
+    let doc_id = index
+        .documents
+        .keys()
+        .next()
+        .cloned()
+        .ok_or("no document indexed from skill file")?;
+
+    let node_id_specs: Vec<&str> = node_ids.iter().map(String::as_str).collect();
+    let opts = ReconstructOptions { keep_all_headers };
+    let result = reconstruct_skill_markdown(index, &doc_id, &[], &node_id_specs, &opts)?;
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(output, &result.markdown)?;
+    eprintln!("Wrote skinny skill to {}", output.display());
+    Ok(())
+}
+
+fn run_recompose_from_catalog(
+    catalog: &Path,
+    doc_id: Option<&str>,
+    skill_path: Option<&Path>,
+    node_ids: &[String],
+    output: Option<&Path>,
+    keep_all_headers: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let resolved_doc_id = resolve_doc_id(catalog, doc_id, skill_path)?;
     let index = load_skills_index_from_dir(catalog)?;
     let node_id_specs: Vec<&str> = node_ids.iter().map(String::as_str).collect();
     let opts = ReconstructOptions { keep_all_headers };
 
-    let reconstructed =
-        write_reconstructed_skill(catalog, &index, doc_id, &[], &node_id_specs, &opts)?;
-
     if let Some(out) = output {
+        let result =
+            reconstruct_skill_markdown(&index, &resolved_doc_id, &[], &node_id_specs, &opts)?;
         if let Some(parent) = out.parent() {
             fs::create_dir_all(parent)?;
         }
-        fs::copy(&reconstructed, out)?;
+        fs::write(out, &result.markdown)?;
         eprintln!("Wrote skinny skill to {}", out.display());
     } else {
+        let reconstructed = write_reconstructed_skill(
+            catalog,
+            &index,
+            &resolved_doc_id,
+            &[],
+            &node_id_specs,
+            &opts,
+        )?;
         eprintln!("Wrote skinny skill to {}", reconstructed.display());
     }
 

@@ -45,8 +45,8 @@ pub use paths::{
 };
 pub use skills_builder::SkillsBuilder;
 pub use skills_io::{
-    load_decomposed_files_for_index, load_skills_index_from_dir, skills_index_from_decomposed_dir,
-    write_skills_index,
+    load_decomposed_files_for_index, load_skills_index_from_dir, resolve_doc_id,
+    resolve_doc_id_from_skill_path, skills_index_from_decomposed_dir, write_skills_index,
 };
 pub use tiktoken::{
     configure as configure_tiktoken, count_json_tokens, count_tokens, count_tokens_or_min,

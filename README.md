@@ -31,11 +31,17 @@ cargo build -p chunk-your-skills --release
 # Decompose one skill file into .catalog/
 ./target/release/chunk-your-skills decompose --skill path/to/SKILL.md --output .catalog
 
-# Recompose skinny skill from node IDs
+# Recompose skinny skill from node IDs (catalog from decompose)
 ./target/release/chunk-your-skills recompose \
   --catalog .catalog \
-  --doc-id create-hook \
-  --node-id n3,n5 \
+  --path path/to/SKILL.md \
+  --node-id 1-3,5,8 \
+  --output skinny/SKILL.md
+
+# Recompose in memory directly from a skill file (no catalog)
+./target/release/chunk-your-skills recompose \
+  --skill path/to/SKILL.md \
+  --node-id 1,2 \
   --output skinny/SKILL.md
 ```
 

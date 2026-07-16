@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::Path;
 
-use crate::pageindex::cache_layout::{NODES_DIR, nodes_dir, page_index_rel};
+use crate::pageindex::cache_layout::{NODES_DIR, nodes_dir, page_index_path, page_index_rel};
 use crate::pageindex::document_json::{load_merged_document_from_entry, write_bytes_atomic};
 use crate::pageindex::{SkillDocument, SkillsIndex};
+use crate::paths::shorten_home_path;
 
 /// Write node and page-index files from an in-memory index to `entry_dir`.
 ///
@@ -113,8 +114,62 @@ pub fn refresh_skills_index_cache(entry_dir: &Path, doc_id: &str) {
 ///
 /// Returns an error when the catalog directory is invalid or files cannot be read.
 pub fn load_skills_index_from_dir(catalog_dir: &Path) -> Result<SkillsIndex, String> {
-    let doc_id = infer_doc_id_from_entry(catalog_dir)?;
+    let doc_id = resolve_doc_id(catalog_dir, None, None)?;
     load_skills_index_from_entry(catalog_dir, &doc_id)
+}
+
+/// Resolve a catalog document id from `--doc-id`, `--path`, or the entry's page index.
+///
+/// # Errors
+///
+/// Returns an error when both selectors are provided, the path does not match any catalog
+/// document, or the entry directory has no page index.
+pub fn resolve_doc_id(
+    catalog_dir: &Path,
+    doc_id: Option<&str>,
+    skill_path: Option<&Path>,
+) -> Result<String, String> {
+    match (doc_id, skill_path) {
+        (Some(id), None) => Ok(id.to_string()),
+        (None, Some(path)) => resolve_doc_id_from_skill_path(catalog_dir, path),
+        (None, None) => infer_doc_id_from_entry(catalog_dir),
+        (Some(_), Some(_)) => Err("provide either doc_id or path, not both".to_string()),
+    }
+}
+
+/// Resolve a catalog document id from the original skill file path stored in `page_index.json`.
+///
+/// # Errors
+///
+/// Returns an error when the page index is missing or no document matches `skill_path`.
+pub fn resolve_doc_id_from_skill_path(
+    catalog_dir: &Path,
+    skill_path: &Path,
+) -> Result<String, String> {
+    let page_path = page_index_path(catalog_dir);
+    if !page_path.is_file() {
+        return Err(format!("page index not found at {}", page_path.display()));
+    }
+
+    let raw = fs::read_to_string(&page_path).map_err(|e| e.to_string())?;
+    let value: serde_json::Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
+    let stored_path = value.get("path").and_then(|v| v.as_str()).unwrap_or("");
+    let doc_id = value
+        .get("id")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| format!("page index missing id at {}", page_path.display()))?;
+
+    let query = skill_path.to_string_lossy();
+    let query_short = shorten_home_path(&query).unwrap_or_else(|_| normalize_skill_path(&query));
+
+    if skill_paths_match(stored_path, &query_short) {
+        return Ok(doc_id.to_string());
+    }
+
+    Err(format!(
+        "no catalog document matches skill path {} (catalog path: {stored_path})",
+        skill_path.display()
+    ))
 }
 
 /// Reconstruct a skills index from an entry directory.
@@ -175,6 +230,16 @@ fn load_dir_files(entry_dir: &Path, dir: &Path, index: &mut SkillsIndex) -> Resu
     Ok(())
 }
 
+fn normalize_skill_path(path: &str) -> String {
+    path.replace('\\', "/").trim_start_matches("./").to_string()
+}
+
+fn skill_paths_match(stored: &str, query: &str) -> bool {
+    let stored = normalize_skill_path(stored);
+    let query = normalize_skill_path(query);
+    stored == query || stored.ends_with(&query) || query.ends_with(&stored)
+}
+
 fn infer_doc_id_from_entry(entry_dir: &Path) -> Result<String, String> {
     let page_path = entry_dir.join(page_index_rel());
     if page_path.is_file() {
@@ -222,6 +287,43 @@ mod tests {
         let rebuilt = load_skills_index_from_entry(&entry_dir, "skill")?;
         assert_eq!(rebuilt.documents.len(), index.documents.len());
         assert!(!rebuilt.files.is_empty());
+        let _ = fs::remove_dir_all(&dir);
+        Ok(())
+    }
+
+    #[test]
+    fn resolve_doc_id_from_skill_path_matches_page_index() -> Result<(), String> {
+        let dir = std::env::temp_dir().join(format!("cysk-resolve-{}", std::process::id()));
+        let entry_dir = dir.join("entry");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(entry_dir.join("nodes")).map_err(|e| e.to_string())?;
+        fs::write(
+            entry_dir.join("nodes/page_index.json"),
+            r#"{
+  "id": "skill",
+  "path": "examples/context7/SKILL.md",
+  "type": "md",
+  "doc_name": "SKILL",
+  "line_count": 1,
+  "structure": []
+}"#,
+        )
+        .map_err(|e| e.to_string())?;
+
+        let doc_id =
+            resolve_doc_id_from_skill_path(&entry_dir, Path::new("examples/context7/SKILL.md"))?;
+        assert_eq!(doc_id, "skill");
+
+        let doc_id = resolve_doc_id(
+            &entry_dir,
+            None,
+            Some(Path::new("examples/context7/SKILL.md")),
+        )?;
+        assert_eq!(doc_id, "skill");
+
+        let doc_id = resolve_doc_id(&entry_dir, Some("skill"), None)?;
+        assert_eq!(doc_id, "skill");
+
         let _ = fs::remove_dir_all(&dir);
         Ok(())
     }

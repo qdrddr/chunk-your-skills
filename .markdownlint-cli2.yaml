@@ -4,9 +4,12 @@
 ignores:
   - paper.md
   - src/catalog/schemas/decomposed/
+  - examples/context7/decomposed/nodes/
 
 # Global rules - mostly defaults. Dir-specific overrides are in backlog/
 config:
+  MD041:
+    front_matter_title: '^\s*name\s*[:=]'
   MD013:
     line_length: 120
     code_blocks: false
