@@ -64,32 +64,16 @@ markdown from explicit node IDs.
 
 ---
 
-## What this library does not do
-
-- **No proxy** — does not intercept agent HTTP traffic or mutate upstream LLM requests.
-- **No MCP tool pruning** — tool-schema reduction lives in clear-your-tools.
-- **No hook injection** — does not write Cursor rules or agent hook payloads.
-- **No semantic search** — does not score sections against a user query; pair with clear-your-tools
-  or your own ranker to pick node IDs automatically.
-- **No multi-file skill bundles** — one indexed document per `SKILL.md` path; directory indexing
-  treats each markdown file independently.
-
----
-
 ## Operational trade-offs
 
 **Skinny skills reduce context size** when you include only the sections an agent needs for the
 current task. Omitting sections saves input tokens but can hide instructions the agent would
 otherwise follow — validate recomposed skills against your task before deploying them.
 
-**Manual node selection** is predictable and auditable but does not adapt turn-by-turn. For
-dynamic, query-driven section injection in agent sessions, use clear-your-tools skills hooks or
-build your own selection layer on top of the page index.
+**Manual node selection** is predictable and auditable but does not adapt turn-by-turn.
 
 ---
 
 ## Related projects
 
-- [clear-your-tools](https://github.com/qdrddr/clear-your-tools) — reverse proxy and hook injection
-  for MCP tool pruning and semantic skills search.
 - [examples/README.md](examples/README.md) — CLI walkthrough with the bundled context7 skill.
