@@ -26,6 +26,9 @@ for the MCP tool-gating proxy.
 ## Quick start (CLI)
 
 ```bash
+cargo install chunk-your-skills
+
+# Or local build for developers
 cargo build -p chunk-your-skills --release
 
 # Decompose one skill file into .catalog/
