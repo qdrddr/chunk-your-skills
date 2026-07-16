@@ -2,7 +2,13 @@
 # Recompose skinny SKILL.md files from a decomposed catalog.
 #
 # Run decompose first (creates the catalog under examples/context7/decomposed/):
-#   ./examples/decompose.sh
+#   ./examples/decompose.sh [--dev]
+#
+# Usage:
+#   ./examples/recompose.sh [--dev]
+#
+#   --dev  Build target/release/chunk-your-skills if missing (repo checkout).
+#          Default: use chunk-your-skills from PATH (cargo install / crates.io).
 #
 # Node map (examples/context7/decomposed/nodes/page_index.json):
 #   0 frontmatter   1 preamble        2 When to Use This Skill
@@ -15,51 +21,67 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=examples/_cli.sh
+source "${SCRIPT_DIR}/_cli.sh"
+
+USE_DEV=0
+if [[ "${1:-}" == "--dev" ]]; then
+	USE_DEV=1
+	shift
+fi
+if [[ $# -gt 0 ]]; then
+	echo "usage: $0 [--dev]" >&2
+	exit 1
+fi
+
+cys_resolve_cli "$USE_DEV"
+
 CATALOG=examples/context7/decomposed
 INPUT_SKILL_PATH=examples/context7/original/SKILL.md
 
 # Full documentation-fetch workflow (nodes 4–7 under the parent section).
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--catalog "$CATALOG" \
 	--path "$INPUT_SKILL_PATH" \
 	--node-id 4-7 \
 	--output examples/context7/skinny-skill/fetch-workflow/SKILL.md
 
 # Cherry-pick two steps; parent "## How to Fetch Documentation" is kept.
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--catalog "$CATALOG" \
 	--path "$INPUT_SKILL_PATH" \
 	--node-id 4,6 \
 	--output examples/context7/skinny-skill/steps-1-and-3/SKILL.md
 
 # Activation-only skinny skill: preamble + when-to-use triggers.
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--catalog "$CATALOG" \
 	--path "$INPUT_SKILL_PATH" \
 	--node-id 1,2 \
 	--output examples/context7/skinny-skill/activation/SKILL.md
 
 # Same activation skill, in memory from the source file (no catalog).
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--skill "$INPUT_SKILL_PATH" \
 	--node-id 1,2 \
 	--output examples/context7/skinny-skill/activation/SKILL.md
 
 # Mixed node-id ranges and lists: preamble + steps 1–3 + guidelines.
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--skill "$INPUT_SKILL_PATH" \
 	--node-id 1-3,8 \
 	--output examples/context7/skinny-skill/mixed-nodes/SKILL.md
 
 # Guidelines section only (frontmatter is always included).
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--catalog "$CATALOG" \
 	--path "$INPUT_SKILL_PATH" \
 	--node-id 8 \
 	--output examples/context7/skinny-skill/guidelines-only/SKILL.md
 
 # Skeleton skill: matched sections keep body; other headings stay as stubs.
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--catalog "$CATALOG" \
 	--path "$INPUT_SKILL_PATH" \
 	--node-id 4 \
@@ -68,7 +90,7 @@ chunk-your-skills recompose \
 
 # Default output path (omit --output): writes under
 #   $CATALOG/skills/retrieve/context7/SKILL.md
-chunk-your-skills recompose \
+"${CHUNK_YOUR_SKILLS_CLI}" recompose \
 	--catalog "$CATALOG" \
 	--path "$INPUT_SKILL_PATH" \
 	--node-id 2,8
