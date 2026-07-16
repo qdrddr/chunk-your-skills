@@ -135,6 +135,14 @@ cargo install chunk-your-skills
 
 Or build locally: `cargo build -p chunk-your-skills --release`.
 
+Library installs:
+
+```bash
+cargo add chunk-your-skills
+pip install chunk-your-skills
+npm install chunk-your-skills
+```
+
 Try the bundled walkthrough — decompose a sample skill, then recompose skinny variants:
 
 ```bash
