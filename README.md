@@ -153,8 +153,6 @@ export PATH="$PWD/target/release:$PATH"
 
 See [examples/README.md](examples/README.md) for node IDs, output paths, and CLI flags.
 
-For SDK usage, see the language READMEs below. Python quick start: [sdk/python/README.md](sdk/python/README.md).
-
 ## SDKs
 
 | SDK | Path | Docs |
