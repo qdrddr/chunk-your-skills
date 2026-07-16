@@ -30,6 +30,18 @@ patterns = [
     (legacy_camel, "CamelCase type"),
 ]
 
+ignore_list_files = {".gitignore"}
+
+
+def is_ignore_list_path_line(text: str, pos: int) -> bool:
+    line_start = text.rfind("\n", 0, pos) + 1
+    line_end = text.find("\n", pos)
+    if line_end == -1:
+        line_end = len(text)
+    line = text[line_start:line_end].strip()
+    return bool(line) and not line.startswith("#")
+
+
 violations: list[str] = []
 for path in sorted(root.rglob("*")):
     if not path.is_file():
@@ -44,6 +56,10 @@ for path in sorted(root.rglob("*")):
         continue
     for pattern, label in patterns:
         for match in pattern.finditer(text):
+            if path.name in ignore_list_files and is_ignore_list_path_line(
+                text, match.start()
+            ):
+                continue
             line = text.count("\n", 0, match.start()) + 1
             violations.append(f"{path.relative_to(root)}:{line}: legacy {label}")
 
