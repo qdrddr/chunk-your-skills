@@ -137,6 +137,16 @@ func TokenCountFromDecomposedFrontmatter(content string) (int64, bool, error) {
 	return cgoTokenCountFromDecomposedFrontmatter(content)
 }
 
+// ParseFrontmatterFields parses root-level YAML frontmatter keys into semantic JSON.
+func ParseFrontmatterFields(content string) (string, error) {
+	return cgoParseFrontmatterFields(content)
+}
+
+// FrontmatterField looks up one semantically parsed frontmatter field by name as JSON.
+func FrontmatterField(content, key string) (string, error) {
+	return cgoFrontmatterField(content, key)
+}
+
 // ReconstructOptionsDefault returns default reconstruct options JSON.
 func ReconstructOptionsDefault() (string, error) {
 	return cgoReconstructOptionsDefault()

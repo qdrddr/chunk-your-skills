@@ -301,7 +301,7 @@ mod tests {
             entry_dir.join("nodes/page_index.json"),
             r#"{
   "id": "skill",
-  "path": "examples/context7/SKILL.md",
+  "path": "examples/context7/original/SKILL.md",
   "type": "md",
   "doc_name": "SKILL",
   "line_count": 1,
@@ -310,14 +310,16 @@ mod tests {
         )
         .map_err(|e| e.to_string())?;
 
-        let doc_id =
-            resolve_doc_id_from_skill_path(&entry_dir, Path::new("examples/context7/SKILL.md"))?;
+        let doc_id = resolve_doc_id_from_skill_path(
+            &entry_dir,
+            Path::new("examples/context7/original/SKILL.md"),
+        )?;
         assert_eq!(doc_id, "skill");
 
         let doc_id = resolve_doc_id(
             &entry_dir,
             None,
-            Some(Path::new("examples/context7/SKILL.md")),
+            Some(Path::new("examples/context7/original/SKILL.md")),
         )?;
         assert_eq!(doc_id, "skill");
 

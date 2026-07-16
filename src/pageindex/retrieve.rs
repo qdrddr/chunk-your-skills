@@ -118,6 +118,10 @@ pub fn get_document<S: std::hash::BuildHasher>(
         "type": doc.doc_type,
         "status": "completed",
         "line_count": doc.line_count,
+        "frontmatter_fields": doc
+            .frontmatter_fields
+            .as_ref()
+            .map_or(Value::Null, |fields| Value::Array(fields.clone())),
     })
 }
 

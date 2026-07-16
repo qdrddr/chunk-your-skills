@@ -4,7 +4,7 @@
 ignores:
   - paper.md
   - src/catalog/schemas/decomposed/
-  - examples/context7/decomposed/nodes/
+  - examples/context7/
 
 # Global rules - mostly defaults. Dir-specific overrides are in backlog/
 config:

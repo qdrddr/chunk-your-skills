@@ -3,10 +3,10 @@ use crate::pageindex::document_json::{
 };
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, ReconstructOptions, SkillDocument, SkillsIndex,
-    build_page_index_for_file, build_page_index_only, build_skills_index,
+    build_page_index_for_file, build_page_index_only, build_skills_index, frontmatter_field,
     get_content_retrieve_result, get_document, get_document_structure, get_line_content,
-    get_line_content_from_spec, md_to_tree, page_index_valid, parse_node_ids,
-    reconstruct_skill_markdown, repair_skill_nodes, spec_refs::OwnedSpecRefs,
+    get_line_content_from_spec, md_to_tree, page_index_valid, parse_frontmatter_fields,
+    parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes, spec_refs::OwnedSpecRefs,
     token_count_from_decomposed_frontmatter, write_reconstructed_skill,
 };
 use crate::skills_builder::SkillsBuilder;
@@ -511,6 +511,20 @@ impl SkillsBuilderNapi {
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn token_count_from_decomposed_frontmatter_napi(content: String) -> Option<u32> {
     token_count_from_decomposed_frontmatter(&content).and_then(|count| u32::try_from(count).ok())
+}
+
+/// Parse root-level YAML frontmatter keys into semantic JSON values.
+#[napi]
+#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
+pub fn parse_frontmatter_fields_napi(content: String) -> Option<Vec<Value>> {
+    parse_frontmatter_fields(&content)
+}
+
+/// Look up one semantically parsed frontmatter field by name.
+#[napi]
+#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
+pub fn frontmatter_field_napi(content: String, key: String) -> Value {
+    frontmatter_field(&Value::String(content), Some(&key)).unwrap_or(Value::Null)
 }
 
 /// # Errors

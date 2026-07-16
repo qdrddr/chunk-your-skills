@@ -14,7 +14,7 @@ use super::manifest::CacheStatus;
 use super::{CachePolicy, SkillEntryRef, disk_available};
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, SkillDocument, load_merged_document_json, page_index_valid,
-    write_page_index_entry,
+    parse_frontmatter_fields, write_page_index_entry,
 };
 use crate::skills_io::refresh_skills_index_cache;
 
@@ -32,6 +32,10 @@ pub fn extract_frontmatter_from_markdown(raw: &str) -> Option<String> {
 pub fn stub_document_from_source(source: &Path, doc_id: &str) -> Result<Value, String> {
     let raw = fs::read_to_string(source).map_err(|e| e.to_string())?;
     let frontmatter = extract_frontmatter_from_markdown(&raw);
+    let frontmatter_fields = frontmatter
+        .as_deref()
+        .map(|body| format!("---\n{body}\n---"))
+        .and_then(|fenced| parse_frontmatter_fields(&fenced));
     Ok(json!({
         "id": doc_id,
         "type": "md",
@@ -40,6 +44,7 @@ pub fn stub_document_from_source(source: &Path, doc_id: &str) -> Result<Value, S
         "line_count": 0,
         "structure": [],
         "frontmatter": frontmatter,
+        "frontmatter_fields": frontmatter_fields,
     }))
 }
 

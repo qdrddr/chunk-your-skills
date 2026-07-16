@@ -9,7 +9,10 @@ use super::document_json::{
     write_entry_metadata, write_page_index_files,
 };
 use super::index::md_to_tree;
-use super::parse::{extract_node_text_content, extract_nodes_from_markdown, extract_skill_prefix};
+use super::parse::{
+    extract_node_text_content, extract_nodes_from_markdown, extract_skill_prefix,
+    parse_frontmatter_fields,
+};
 use super::tree::{build_tree_from_nodes, finalize_skill_structure};
 use super::types::{MdIndexResult, SkillsIndex, build_skill_document, doc_id_from_rel_path};
 
@@ -166,6 +169,10 @@ fn index_skill_md_content(req: SkillMdIndexRequest<'_>) -> Result<(), String> {
         index,
     } = req;
     let prefix = extract_skill_prefix(content);
+    let frontmatter_fields = prefix
+        .frontmatter
+        .as_deref()
+        .and_then(parse_frontmatter_fields);
     let source_path = super::document_json::shorten_home_path(path.to_string_lossy().as_ref())?;
     if index.documents.contains_key(doc_id) {
         return Ok(());
@@ -191,6 +198,7 @@ fn index_skill_md_content(req: SkillMdIndexRequest<'_>) -> Result<(), String> {
         },
         config,
         prefix.frontmatter,
+        frontmatter_fields,
         preamble,
     );
     decompose_page_index(index, &doc, &flat_for_decompose, config);
@@ -326,6 +334,41 @@ mod tests {
             .get("create-hook")
             .ok_or_else(|| "missing create-hook document".to_string())?;
         assert!(doc.path.ends_with("create-hook.md"));
+
+        let _ = fs::remove_dir_all(&skills_dir);
+        Ok(())
+    }
+
+    #[test]
+    fn indexes_frontmatter_fields_semantically() -> Result<(), String> {
+        let home = crate::paths::home_dir()?;
+        let skills_dir = home.join(format!(".cysk-skills-fm-fields-{}", std::process::id()));
+        fs::create_dir_all(&skills_dir).map_err(|e| e.to_string())?;
+        fs::write(
+            skills_dir.join("skill.md"),
+            "---\nname: context7-mcp\ndescription: >-\n  Line one.\n  Line two.\n---\n\nBody\n\n## Section\n\nMore",
+        )
+        .map_err(|e| e.to_string())?;
+
+        let index =
+            build_page_index_for_file(&skills_dir.join("skill.md"), &PageIndexConfig::default())?;
+        let doc = index
+            .documents
+            .get("skill")
+            .ok_or_else(|| "missing skill document".to_string())?;
+        let description = doc
+            .frontmatter_field("description")
+            .and_then(|v| v.as_str().map(str::to_string))
+            .ok_or_else(|| "missing description field".to_string())?;
+        assert_eq!(description, "Line one. Line two.");
+        let page_json = index
+            .files
+            .get("nodes/page_index.json")
+            .ok_or_else(|| "missing page_index.json".to_string())?;
+        assert!(page_json.contains("\"frontmatter_fields\""));
+        assert!(page_json.contains("\"name\""));
+        assert!(page_json.contains("context7-mcp"));
+        assert!(page_json.contains("Line one. Line two."));
 
         let _ = fs::remove_dir_all(&skills_dir);
         Ok(())

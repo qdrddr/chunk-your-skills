@@ -234,8 +234,33 @@ int cyt_parse_skill_node_ids(const char *spec, char **out);
 
 /*
  Parse ``token_count`` from decomposed markdown/JSON frontmatter when present.
+
+ # Safety
+
+ `content` must be a valid null-terminated UTF-8 C string, or null (returns error).
+ `out` must be a valid mutable pointer to receive the token count, or null (returns error).
  */
 int cyt_token_count_from_decomposed_frontmatter(const char *content, long *out);
+
+/*
+ Parse root-level YAML frontmatter keys into semantic JSON values.
+
+ # Safety
+
+ `content` must be a valid null-terminated UTF-8 C string, or null (returns error).
+ `out` must be a valid mutable pointer to receive the JSON output string, or null (returns error).
+ */
+int cyt_parse_frontmatter_fields(const char *content, char **out);
+
+/*
+ Look up one semantically parsed frontmatter field by name.
+
+ # Safety
+
+ `content` and `key` must be valid null-terminated UTF-8 C strings, or null (returns error).
+ `out` must be a valid mutable pointer to receive the JSON output string, or null (returns error).
+ */
+int cyt_frontmatter_field(const char *content, const char *key, char **out);
 
 int cyt_skills_builder_new(int memory_only,
                            const char *output_dir,

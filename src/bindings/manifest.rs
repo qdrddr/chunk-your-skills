@@ -44,6 +44,8 @@ pub const EXPORTS: &[FfiExport] = &[
     export("cyt_write_reconstructed_skill", "pageindex"),
     export("cyt_get_skill_line_content", "pageindex"),
     export("cyt_token_count_from_decomposed_frontmatter", "pageindex"),
+    export("cyt_parse_frontmatter_fields", "pageindex"),
+    export("cyt_frontmatter_field", "pageindex"),
     export("cyt_parse_skill_node_ids", "pageindex"),
     export("cyt_skills_builder_new", "pageindex"),
     export("cyt_skills_builder_free", "pageindex"),

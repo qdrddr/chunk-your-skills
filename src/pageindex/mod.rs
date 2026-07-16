@@ -6,6 +6,9 @@ pub mod document_json;
 pub mod index;
 pub mod node_id;
 pub mod parse;
+pub use parse::{
+    extract_skill_prefix, frontmatter_field, frontmatter_yaml_body, parse_frontmatter_fields,
+};
 pub mod reconstruct;
 pub mod retrieve;
 pub mod skills_repair;

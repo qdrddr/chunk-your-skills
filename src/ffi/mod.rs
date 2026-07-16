@@ -19,7 +19,10 @@ pub use error::{
 pub use memory::{cyt_free_string, cyt_get_version};
 
 pub use cache::{cyt_configure_memory_cache, cyt_ensure_skills_registry};
-pub use pageindex::CytSkillsBuilder;
+pub use pageindex::{
+    CytSkillsBuilder, cyt_frontmatter_field, cyt_parse_frontmatter_fields,
+    cyt_token_count_from_decomposed_frontmatter,
+};
 pub use tokens::{
     cyt_configure_tokenizer_defaults, cyt_count_json_tokens, cyt_count_tokens,
     cyt_count_tokens_batch,

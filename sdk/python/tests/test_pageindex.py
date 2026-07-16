@@ -23,6 +23,8 @@ from chunk_your_skills import (  # noqa: E402
     page_index_config_from_mapping,
     repair_skill_nodes,
     token_count_from_decomposed_frontmatter,
+    parse_frontmatter_fields,
+    frontmatter_field,
     write_skills_index,
 )
 
@@ -113,6 +115,19 @@ def test_token_count_from_decomposed_frontmatter() -> None:
     content = "---\ndoc_id: d1\nnode_id: 2\ntoken_count: 42\n---\n## Body\n"
     assert token_count_from_decomposed_frontmatter(content) == 42
     assert token_count_from_decomposed_frontmatter("no frontmatter") is None
+
+
+def test_parse_frontmatter_fields_folds_description() -> None:
+    frontmatter = (
+        "---\nname: context7-mcp\ndescription: >-\n"
+        "  Line one.\n  Line two.\n---"
+    )
+    fields = parse_frontmatter_fields(frontmatter)
+    assert fields is not None
+    assert {"name": "context7-mcp"} in fields
+    assert {"description": "Line one. Line two."} in fields
+    assert frontmatter_field(frontmatter, "description") == "Line one. Line two."
+    assert frontmatter_field(frontmatter, "missing") is None
 
 
 def test_build_skills_index_node_files_include_token_count() -> None:

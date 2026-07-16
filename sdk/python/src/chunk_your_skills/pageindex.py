@@ -34,6 +34,8 @@ from chunk_your_skills._native import (
 from chunk_your_skills._native import (
     token_count_from_decomposed_frontmatter as _token_count_from_decomposed_frontmatter,
 )
+from chunk_your_skills._native import parse_frontmatter_fields as _parse_frontmatter_fields
+from chunk_your_skills._native import frontmatter_field as _frontmatter_field
 from chunk_your_skills._native import (
     update_skill_document_source_path as _update_skill_document_source_path,
 )
@@ -271,6 +273,16 @@ def parse_skill_node_ids(spec: str) -> list[int]:
 def token_count_from_decomposed_frontmatter(content: str) -> int | None:
     """Parse ``token_count`` from decomposed markdown/JSON frontmatter when present."""
     return _token_count_from_decomposed_frontmatter(content)
+
+
+def parse_frontmatter_fields(content: str) -> list[dict[str, Any]] | None:
+    """Parse root-level YAML frontmatter keys into semantic values."""
+    return _parse_frontmatter_fields(content)
+
+
+def frontmatter_field(content: str, key: str) -> Any:
+    """Look up one semantically parsed frontmatter field by name."""
+    return _frontmatter_field(content, key)
 
 
 class SkillsBuilder:

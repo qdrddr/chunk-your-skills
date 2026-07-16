@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-chunk-your-skills decompose --skill examples/context7/SKILL.md --output examples/context7/decomposed/
+# cargo clean && cargo build --release --bin chunk-your-skills
+
+target/release/chunk-your-skills decompose --skill examples/context7/original/SKILL.md --output examples/context7/decomposed/

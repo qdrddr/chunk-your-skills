@@ -6,6 +6,7 @@ pub use super::cache_layout::{
     page_index_rel, skill_entry_dir,
 };
 use super::config::PageIndexConfig;
+use super::parse::frontmatter_field;
 
 #[derive(Debug, Clone)]
 pub struct MdIndexResult {
@@ -23,10 +24,19 @@ pub struct SkillDocument {
     pub line_count: u32,
     pub structure: Value,
     pub frontmatter: Option<String>,
+    pub frontmatter_fields: Option<Vec<Value>>,
     pub preamble: Option<String>,
 }
 
 impl SkillDocument {
+    /// Look up one semantically parsed root frontmatter field by name.
+    #[must_use]
+    pub fn frontmatter_field(&self, key: &str) -> Option<Value> {
+        self.frontmatter_fields
+            .as_ref()
+            .and_then(|fields| frontmatter_field(&Value::Array(fields.clone()), Some(key)))
+    }
+
     #[must_use]
     pub fn to_json(&self) -> Value {
         let mut obj = json!({
@@ -42,6 +52,12 @@ impl SkillDocument {
                 map.insert(
                     "frontmatter".to_string(),
                     Value::String(frontmatter.clone()),
+                );
+            }
+            if let Some(fields) = &self.frontmatter_fields {
+                map.insert(
+                    "frontmatter_fields".to_string(),
+                    Value::Array(fields.clone()),
                 );
             }
             if let Some(preamble) = &self.preamble {
@@ -84,6 +100,9 @@ impl SkillDocument {
                 .get("frontmatter")
                 .and_then(|v| v.as_str())
                 .map(str::to_string),
+            frontmatter_fields: obj.get("frontmatter_fields").and_then(|value| {
+                frontmatter_field(value, None).and_then(|value| value.as_array().cloned())
+            }),
             preamble: obj
                 .get("preamble")
                 .and_then(|v| v.as_str())
@@ -155,6 +174,7 @@ pub fn build_skill_document(
     result: &MdIndexResult,
     config: &PageIndexConfig,
     frontmatter: Option<String>,
+    frontmatter_fields: Option<Vec<Value>>,
     preamble: Option<String>,
 ) -> SkillDocument {
     SkillDocument {
@@ -165,6 +185,7 @@ pub fn build_skill_document(
         line_count: result.line_count,
         structure: super::tree::format_structure_for_output(&result.structure, config),
         frontmatter,
+        frontmatter_fields,
         preamble,
     }
 }

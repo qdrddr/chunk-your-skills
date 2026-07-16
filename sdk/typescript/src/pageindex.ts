@@ -20,6 +20,8 @@ import {
   pageIndexValidNative,
   parseSkillNodeIdsNative,
   tokenCountFromDecomposedFrontmatterNative,
+  parseFrontmatterFieldsNative,
+  frontmatterFieldNative,
   reconstructSkillMarkdownNative,
   repairSkillNodesNative,
   skillsIndexFromDecomposedDirNative,
@@ -255,6 +257,16 @@ export function tokenCountFromDecomposedFrontmatter(
   content: string,
 ): number | null {
   return tokenCountFromDecomposedFrontmatterNative(content);
+}
+
+export function parseFrontmatterFields(
+  content: string,
+): Array<Record<string, unknown>> | null {
+  return parseFrontmatterFieldsNative(content);
+}
+
+export function frontmatterField(content: string, key: string): unknown {
+  return frontmatterFieldNative(content, key);
 }
 
 export function repairSkillNodes(

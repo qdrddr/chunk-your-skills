@@ -2,11 +2,11 @@
 
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, ReconstructOptions, SkillsIndex, build_page_index_for_file,
-    build_page_index_only, build_skills_index, finalize_entry_metadata,
+    build_page_index_only, build_skills_index, finalize_entry_metadata, frontmatter_field,
     get_content_retrieve_result, get_document, get_document_structure, get_line_content,
     get_line_content_from_spec, load_merged_document_json, md_to_tree, page_index_valid,
-    parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes, spec_refs::OwnedSpecRefs,
-    token_count_from_decomposed_frontmatter, update_document_source_path,
+    parse_frontmatter_fields, parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes,
+    spec_refs::OwnedSpecRefs, token_count_from_decomposed_frontmatter, update_document_source_path,
     write_reconstructed_skill,
 };
 use crate::skills_builder::SkillsBuilder;
@@ -16,6 +16,7 @@ use crate::skills_io::{
 };
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
+use serde_json::Value;
 use std::path::PathBuf;
 
 use super::{py_to_value, value_to_py};
@@ -505,6 +506,21 @@ fn token_count_from_decomposed_frontmatter_py(content: &str) -> Option<usize> {
     token_count_from_decomposed_frontmatter(content)
 }
 
+#[pyfunction(name = "parse_frontmatter_fields")]
+fn parse_frontmatter_fields_py(py: Python<'_>, content: &str) -> PyResult<Py<PyAny>> {
+    parse_frontmatter_fields(content).map_or_else(
+        || Ok(py.None()),
+        |fields| value_to_py(py, &serde_json::Value::Array(fields)),
+    )
+}
+
+#[pyfunction(name = "frontmatter_field")]
+fn frontmatter_field_py(py: Python<'_>, content: &str, key: &str) -> PyResult<Py<PyAny>> {
+    let value =
+        frontmatter_field(&Value::String(content.to_string()), Some(key)).unwrap_or(Value::Null);
+    value_to_py(py, &value)
+}
+
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(build_skills_index_py, m)?)?;
     m.add_function(wrap_pyfunction!(write_skills_index_py, m)?)?;
@@ -531,6 +547,8 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
         token_count_from_decomposed_frontmatter_py,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(parse_frontmatter_fields_py, m)?)?;
+    m.add_function(wrap_pyfunction!(frontmatter_field_py, m)?)?;
     m.add_class::<PyReconstructOptions>()?;
     m.add_class::<PySkillsBuilder>()?;
     Ok(())

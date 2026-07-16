@@ -7,9 +7,6 @@ description: >-
   Vue, Next.js, Prisma, Supabase, etc.
 ---
 
-When the user asks about libraries, frameworks, or needs code examples, use Context7 to fetch
-current documentation instead of relying on training data.
-
 ## How to Fetch Documentation
 
 ### Step 1: Resolve the Library ID

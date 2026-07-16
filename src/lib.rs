@@ -28,16 +28,16 @@ pub mod ffi;
 pub use pageindex::{
     EntryMetadata, MdIndexResult, PageIndexConfig, RETRIEVE_DIR, ReconstructOptions,
     ReconstructResult, SkillDocument, SkillsIndex, build_page_index_for_file, build_skills_index,
-    finalize_entry_metadata as finalize_skill_document_json,
+    finalize_entry_metadata as finalize_skill_document_json, frontmatter_field,
     get_content_retrieve_result as get_skill_content_retrieve_result,
     get_document as get_skill_document, get_document_structure as get_skill_structure,
     get_line_content as get_skill_line_content,
     get_line_content_from_spec as get_skill_line_content_from_spec,
     load_merged_document_json as load_merged_skill_document_json, md_to_tree,
-    parse_line_nums as parse_skill_line_nums, parse_node_ids as parse_skill_node_ids,
-    reconstruct_skill_markdown, repair_skill_nodes, retrieve_output_rel_path,
-    token_count_from_decomposed_frontmatter, update_document_source_path, write_entry_metadata,
-    write_reconstructed_skill,
+    parse_frontmatter_fields, parse_line_nums as parse_skill_line_nums,
+    parse_node_ids as parse_skill_node_ids, reconstruct_skill_markdown, repair_skill_nodes,
+    retrieve_output_rel_path, token_count_from_decomposed_frontmatter, update_document_source_path,
+    write_entry_metadata, write_reconstructed_skill,
 };
 pub use paths::{
     PathConfig, configure as configure_paths, skills_decomposed_prefix, snapshot as path_snapshot,

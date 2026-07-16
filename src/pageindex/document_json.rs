@@ -30,6 +30,7 @@ pub struct SkillDocumentOnDisk {
     pub path: String,
     pub structure: Value,
     pub frontmatter: Option<String>,
+    pub frontmatter_fields: Option<Vec<Value>>,
 }
 
 pub use crate::paths::shorten_home_path;
@@ -250,6 +251,10 @@ pub fn parse_document_on_disk(value: &Value) -> Option<SkillDocumentOnDisk> {
             .get("frontmatter")
             .and_then(Value::as_str)
             .map(str::to_string),
+        frontmatter_fields: obj.get("frontmatter_fields").and_then(|value| {
+            crate::pageindex::parse::frontmatter_field(value, None)
+                .and_then(|value| value.as_array().cloned())
+        }),
     })
 }
 
@@ -355,7 +360,7 @@ pub fn empty_index_params() -> Value {
 mod tests {
     use super::*;
     use crate::pageindex::types::build_skill_document;
-    use crate::pageindex::{MdIndexResult, PageIndexConfig};
+    use crate::pageindex::{MdIndexResult, PageIndexConfig, parse_frontmatter_fields};
 
     #[test]
     fn split_and_merge_document_json_roundtrip() -> Result<(), String> {
@@ -378,6 +383,7 @@ mod tests {
             },
             &PageIndexConfig::default(),
             Some("name: demo".to_string()),
+            parse_frontmatter_fields("---\nname: demo\n---"),
             None,
         );
         let metadata = EntryMetadata {

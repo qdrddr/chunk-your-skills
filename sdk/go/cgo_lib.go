@@ -385,6 +385,28 @@ func cgoTokenCountFromDecomposedFrontmatter(content string) (int64, bool, error)
 	return int64(out), true, nil
 }
 
+func cgoParseFrontmatterFields(content string) (string, error) {
+	cContent := cString(content)
+	defer freeCString(cContent)
+	var out *C.char
+	if C.cyt_parse_frontmatter_fields(cContent, &out) != ok {
+		return "", lastError()
+	}
+	return takeJSON(&out)
+}
+
+func cgoFrontmatterField(content, key string) (string, error) {
+	cContent := cString(content)
+	defer freeCString(cContent)
+	cKey := cString(key)
+	defer freeCString(cKey)
+	var out *C.char
+	if C.cyt_frontmatter_field(cContent, cKey, &out) != ok {
+		return "", lastError()
+	}
+	return takeJSON(&out)
+}
+
 func cgoReconstructOptionsDefault() (string, error) {
 	var out *C.char
 	if C.cyt_reconstruct_options_default(&out) != ok {

@@ -14,10 +14,10 @@ use crate::pageindex::document_json::{
 use crate::pageindex::spec_refs::OwnedSpecRefs;
 use crate::pageindex::{
     EntryMetadata, PageIndexConfig, ReconstructOptions, SkillDocument, SkillsIndex,
-    build_page_index_only, build_skills_index, get_content_retrieve_result, get_document,
-    get_document_structure, get_line_content, get_line_content_from_spec, md_to_tree,
-    page_index_valid, parse_node_ids, reconstruct_skill_markdown, repair_skill_nodes,
-    write_reconstructed_skill,
+    build_page_index_only, build_skills_index, frontmatter_field, get_content_retrieve_result,
+    get_document, get_document_structure, get_line_content, get_line_content_from_spec, md_to_tree,
+    page_index_valid, parse_frontmatter_fields, parse_node_ids, reconstruct_skill_markdown,
+    repair_skill_nodes, write_reconstructed_skill,
 };
 use crate::skills_builder::SkillsBuilder;
 use crate::skills_io::{
@@ -495,6 +495,11 @@ pub unsafe extern "C" fn cyt_parse_skill_node_ids(
 }
 
 /// Parse ``token_count`` from decomposed markdown/JSON frontmatter when present.
+///
+/// # Safety
+///
+/// `content` must be a valid null-terminated UTF-8 C string, or null (returns error).
+/// `out` must be a valid mutable pointer to receive the token count, or null (returns error).
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn cyt_token_count_from_decomposed_frontmatter(
     content: *const c_char,
@@ -512,6 +517,55 @@ pub unsafe extern "C" fn cyt_token_count_from_decomposed_frontmatter(
                 .and_then(|value| c_long::try_from(value).ok())
                 .unwrap_or(-1);
         }
+        Ok(())
+    })
+}
+
+/// Parse root-level YAML frontmatter keys into semantic JSON values.
+///
+/// # Safety
+///
+/// `content` must be a valid null-terminated UTF-8 C string, or null (returns error).
+/// `out` must be a valid mutable pointer to receive the JSON output string, or null (returns error).
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn cyt_parse_frontmatter_fields(
+    content: *const c_char,
+    out: *mut *mut c_char,
+) -> c_int {
+    run_ffi(|| {
+        if out.is_null() {
+            set_error("null pointer: out");
+            return Err(CYT_ERR_NULL_PTR);
+        }
+        let text = unsafe { c_str_to_str(content, "content")? };
+        let value = parse_frontmatter_fields(text).map_or(Value::Null, Value::Array);
+        unsafe { write_json_out(&value, out)? };
+        Ok(())
+    })
+}
+
+/// Look up one semantically parsed frontmatter field by name.
+///
+/// # Safety
+///
+/// `content` and `key` must be valid null-terminated UTF-8 C strings, or null (returns error).
+/// `out` must be a valid mutable pointer to receive the JSON output string, or null (returns error).
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn cyt_frontmatter_field(
+    content: *const c_char,
+    key: *const c_char,
+    out: *mut *mut c_char,
+) -> c_int {
+    run_ffi(|| {
+        if out.is_null() {
+            set_error("null pointer: out");
+            return Err(CYT_ERR_NULL_PTR);
+        }
+        let text = unsafe { c_str_to_str(content, "content")? };
+        let field_key = unsafe { c_str_to_str(key, "key")? };
+        let value = frontmatter_field(&Value::String(text.to_string()), Some(field_key))
+            .unwrap_or(Value::Null);
+        unsafe { write_json_out(&value, out)? };
         Ok(())
     })
 }

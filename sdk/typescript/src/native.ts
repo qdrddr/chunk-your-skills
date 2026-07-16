@@ -36,6 +36,8 @@ export const writeReconstructedSkillNative = native.writeReconstructedSkillNapi;
 export const parseSkillNodeIdsNative = native.parseSkillNodeIdsNapi;
 export const tokenCountFromDecomposedFrontmatterNative =
   native.tokenCountFromDecomposedFrontmatterNapi;
+export const parseFrontmatterFieldsNative = native.parseFrontmatterFieldsNapi;
+export const frontmatterFieldNative = native.frontmatterFieldNapi;
 export const SkillsBuilderNative = native.SkillsBuilderNapi;
 
 // Tokens

@@ -786,6 +786,7 @@ mod tests {
             line_count: 10,
             structure: Value::Array(vec![]),
             frontmatter: None,
+            frontmatter_fields: None,
             preamble: None,
         };
         assert_eq!(retrieve_output_rel_path(&doc), "lean-ctx/SKILL.md");

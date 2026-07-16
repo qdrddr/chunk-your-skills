@@ -38,6 +38,8 @@ export {
   pageIndexConfigToNative,
   parseSkillNodeIds,
   tokenCountFromDecomposedFrontmatter,
+  parseFrontmatterFields,
+  frontmatterField,
   reconstructSkillMarkdown,
   skillsIndexFromDecomposedDir,
   writeReconstructedSkill,

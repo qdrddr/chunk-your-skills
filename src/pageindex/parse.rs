@@ -106,6 +106,8 @@ pub fn extract_node_text_content(
     all_nodes
 }
 
+use serde_json::{Map, Value};
+
 /// YAML frontmatter and optional body text before the first heading.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SkillPrefix {
@@ -189,9 +191,112 @@ pub fn extract_skill_prefix(markdown_content: &str) -> SkillPrefix {
     }
 }
 
+/// Return the inner YAML body from a fenced frontmatter block (`---` … `---`).
+#[must_use]
+pub fn frontmatter_yaml_body(frontmatter: &str) -> Option<String> {
+    let trimmed = frontmatter.trim();
+    if !trimmed.starts_with("---") {
+        return None;
+    }
+    let rest = trimmed.strip_prefix("---")?.trim_start_matches('\n');
+    let end = rest.find("\n---")?;
+    Some(rest[..end].to_string())
+}
+
+fn yaml_value_to_json(value: serde_yaml::Value) -> Value {
+    match value {
+        serde_yaml::Value::Null => Value::Null,
+        serde_yaml::Value::Bool(b) => Value::Bool(b),
+        serde_yaml::Value::Number(n) => n.as_i64().map_or_else(
+            || {
+                n.as_f64().map_or_else(
+                    || Value::String(n.to_string()),
+                    |f| serde_json::Number::from_f64(f).map_or(Value::Null, Value::Number),
+                )
+            },
+            |i| Value::Number(i.into()),
+        ),
+        serde_yaml::Value::String(s) => Value::String(s),
+        serde_yaml::Value::Sequence(seq) => {
+            Value::Array(seq.into_iter().map(yaml_value_to_json).collect())
+        }
+        serde_yaml::Value::Mapping(map) => {
+            let mut obj = Map::new();
+            for (key, value) in map {
+                if let Some(key) = yaml_key_to_string(key) {
+                    obj.insert(key, yaml_value_to_json(value));
+                }
+            }
+            Value::Object(obj)
+        }
+        serde_yaml::Value::Tagged(tagged) => yaml_value_to_json(tagged.value),
+    }
+}
+
+fn yaml_key_to_string(key: serde_yaml::Value) -> Option<String> {
+    match key {
+        serde_yaml::Value::String(s) => Some(s),
+        _ => None,
+    }
+}
+
+/// Parse or look up semantically parsed frontmatter fields.
+///
+/// `source` may be a fenced YAML frontmatter string, the `frontmatter_fields`
+/// array from `page_index.json`, or a legacy object map.
+///
+/// When `key` is `None`, returns the normalized array of `{ "key": value }` entries.
+/// When `key` is `Some`, returns that root field's semantic value.
+#[must_use]
+pub fn frontmatter_field(source: &Value, key: Option<&str>) -> Option<Value> {
+    let parsed: Vec<Value> = match source {
+        Value::String(text) => parse_frontmatter_fields(text)?,
+        Value::Array(items) => items.clone(),
+        Value::Object(map) => map
+            .iter()
+            .map(|(field_key, value)| {
+                let mut entry = Map::new();
+                entry.insert(field_key.clone(), value.clone());
+                Value::Object(entry)
+            })
+            .collect(),
+        _ => return None,
+    };
+    match key {
+        None => Some(Value::Array(parsed)),
+        Some(field_key) => parsed
+            .iter()
+            .find_map(|entry| entry.as_object()?.get(field_key))
+            .cloned(),
+    }
+}
+
+/// Parse root-level YAML frontmatter keys into semantic JSON values.
+///
+/// Returns one `{ "key": value }` object per root YAML key, preserving source order.
+/// For example, `description: >-` is folded into a single string value.
+#[must_use]
+pub fn parse_frontmatter_fields(frontmatter: &str) -> Option<Vec<Value>> {
+    let body = frontmatter_yaml_body(frontmatter)?;
+    let yaml: serde_yaml::Value = serde_yaml::from_str(&body).ok()?;
+    let serde_yaml::Value::Mapping(map) = yaml else {
+        return None;
+    };
+    let mut fields = Vec::new();
+    for (key, value) in map {
+        if let Some(key) = yaml_key_to_string(key) {
+            let mut entry = Map::new();
+            entry.insert(key, yaml_value_to_json(value));
+            fields.push(Value::Object(entry));
+        }
+    }
+    Some(fields)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[test]
     fn extracts_frontmatter_and_preamble() {
@@ -204,6 +309,65 @@ mod tests {
         assert_eq!(prefix.frontmatter_line_num, Some(1));
         assert_eq!(prefix.preamble.as_deref(), Some("Intro line"));
         assert_eq!(prefix.preamble_line_num, Some(6));
+    }
+
+    #[test]
+    fn parses_folded_description_semantically() -> Result<(), String> {
+        let frontmatter = "---\nname: context7-mcp\ndescription: >-\n  This skill should be used when the user asks about libraries,\n  frameworks, or needs code examples.\n---";
+        let fields =
+            parse_frontmatter_fields(frontmatter).ok_or_else(|| "parsed fields".to_string())?;
+        assert_eq!(fields.len(), 2);
+        assert_eq!(
+            frontmatter_field(&Value::Array(fields.clone()), Some("name"))
+                .and_then(|v| v.as_str().map(str::to_string)),
+            Some("context7-mcp".to_string())
+        );
+        assert_eq!(
+            frontmatter_field(&Value::Array(fields), Some("description"))
+                .and_then(|v| v.as_str().map(str::to_string)),
+            Some("This skill should be used when the user asks about libraries, frameworks, or needs code examples.".to_string())
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn parses_arbitrary_root_keys() -> Result<(), String> {
+        let frontmatter =
+            "---\nname: demo\nversion: 2\nenabled: true\ntags:\n  - rust\n  - yaml\n---";
+        let fields =
+            parse_frontmatter_fields(frontmatter).ok_or_else(|| "parsed fields".to_string())?;
+        let source = Value::Array(fields);
+        assert_eq!(
+            frontmatter_field(&source, Some("name")).and_then(|v| v.as_str().map(str::to_string)),
+            Some("demo".to_string())
+        );
+        assert_eq!(
+            frontmatter_field(&source, Some("version")).and_then(|v| v.as_u64()),
+            Some(2)
+        );
+        assert_eq!(
+            frontmatter_field(&source, Some("enabled")).and_then(|v| v.as_bool()),
+            Some(true)
+        );
+        let tags = frontmatter_field(&source, Some("tags"))
+            .and_then(|v| v.as_array().cloned())
+            .ok_or_else(|| "tags array".to_string())?;
+        assert_eq!(tags.len(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn frontmatter_field_normalizes_legacy_object_json() -> Result<(), String> {
+        let legacy = json!({"name": "demo", "version": 2});
+        let normalized =
+            frontmatter_field(&legacy, None).ok_or_else(|| "normalized fields".to_string())?;
+        let array = normalized.as_array().ok_or_else(|| "array".to_string())?;
+        assert_eq!(array.len(), 2);
+        assert_eq!(
+            frontmatter_field(&legacy, Some("name")).and_then(|v| v.as_str().map(str::to_string)),
+            Some("demo".to_string())
+        );
+        Ok(())
     }
 
     #[test]

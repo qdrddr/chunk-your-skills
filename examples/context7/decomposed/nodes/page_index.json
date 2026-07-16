@@ -1,10 +1,18 @@
 {
   "doc_name": "SKILL",
-  "frontmatter": "---\nname: context7-mcp\ndescription: This skill should be used when the user asks about libraries, frameworks, API references, or needs code examples. Activates for setup questions, code generation involving libraries, or mentions of specific frameworks like React, Vue, Next.js, Prisma, Supabase, etc.\n---",
+  "frontmatter": "---\nname: context7-mcp\ndescription: >-\n  This skill should be used when the user asks about libraries, frameworks,\n  API references, or needs code examples. Activates for setup questions, code\n  generation involving libraries, or mentions of specific frameworks like React,\n  Vue, Next.js, Prisma, Supabase, etc.\n---",
+  "frontmatter_fields": [
+    {
+      "name": "context7-mcp"
+    },
+    {
+      "description": "This skill should be used when the user asks about libraries, frameworks, API references, or needs code examples. Activates for setup questions, code generation involving libraries, or mentions of specific frameworks like React, Vue, Next.js, Prisma, Supabase, etc."
+    }
+  ],
   "id": "skill",
-  "line_count": 53,
-  "path": "examples/context7/SKILL.md",
-  "preamble": "When the user asks about libraries, frameworks, or needs code examples, use Context7 to fetch current documentation instead of relying on training data.",
+  "line_count": 59,
+  "path": "examples/context7/original/SKILL.md",
+  "preamble": "When the user asks about libraries, frameworks, or needs code examples, use Context7 to fetch\ncurrent documentation instead of relying on training data.",
   "structure": [
     {
       "kind": "frontmatter",
@@ -13,35 +21,35 @@
     },
     {
       "kind": "preamble",
-      "line_num": 6,
+      "line_num": 10,
       "node_id": 1
     },
     {
-      "line_num": 8,
+      "line_num": 13,
       "node_id": 2,
       "title": "When to Use This Skill"
     },
     {
-      "line_num": 17,
+      "line_num": 22,
       "node_id": 3,
       "nodes": [
         {
-          "line_num": 19,
+          "line_num": 24,
           "node_id": 4,
           "title": "Step 1: Resolve the Library ID"
         },
         {
-          "line_num": 26,
+          "line_num": 31,
           "node_id": 5,
           "title": "Step 2: Select the Best Match"
         },
         {
-          "line_num": 34,
+          "line_num": 39,
           "node_id": 6,
           "title": "Step 3: Fetch the Documentation"
         },
         {
-          "line_num": 41,
+          "line_num": 46,
           "node_id": 7,
           "title": "Step 4: Use the Documentation"
         }
@@ -49,7 +57,7 @@
       "title": "How to Fetch Documentation"
     },
     {
-      "line_num": 49,
+      "line_num": 54,
       "node_id": 8,
       "title": "Guidelines"
     }
