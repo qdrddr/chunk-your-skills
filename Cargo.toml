@@ -1,6 +1,6 @@
 [package]
 name = "chunk-your-skills"
-version = "1.0.7"
+version = "1.0.8"
 edition = "2024"
 authors = ["Damien Berezenko"]
 description = "Decompose agent SKILL.md files into page-indexed nodes and recompose skinny skills"

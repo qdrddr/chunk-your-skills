@@ -63,7 +63,6 @@ ${ROOT}/sdk/typescript/package.json
 ${ROOT}/sdk/typescript/package-lock.json
 ${ROOT}/sdk/c/CMakeLists.txt
 ${ROOT}/sdk/go/moduleversion/version.go
-${ROOT}/search/.publish-tag
 EOF
 }
 
