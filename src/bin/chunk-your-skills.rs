@@ -7,8 +7,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
-#[command(name = "chunk-your-skills")]
-#[command(about = "Decompose SKILL.md into page-indexed nodes and recompose skinny skills")]
+#[command(
+    name = "chunk-your-skills",
+    version = env!("CARGO_PKG_VERSION"),
+    about = "Chunk/Decompose SKILL.md into page-indexed nodes and recompose skinny skills"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
