@@ -2,14 +2,19 @@
 
 <div align="center">
 
+[![Quick Start][quick-start-shield]](#quick-start)
 [![License][license-badge-shield]][license-link]
+![No Telemetry][telemetry-shield]
+
 [![version][version-shield]][release-link]
+[![discord][discord-shield]][discord-link]
 
 ![Rust][rust-tech-shield]
 ![Python][python-tech-shield]
 ![TypeScript][typescript-shield]
 ![Go][go-tech-shield]
 ![C][c-tech-shield]
+![Shell][shell-shield]
 
 </div>
 
@@ -28,16 +33,16 @@ for the MCP tool-gating proxy.
 
 ## Packages
 
-<div align="center">
-
-[![Windows][windows-shield]](#supported-platforms)
-[![macOS][macos-shield]](#supported-platforms)
-[![Linux][linux-shield]](#supported-platforms)
-
-</div>
-
 <details open>
 <summary><strong>Published packages</strong></summary>
+
+<div align="center">
+
+![Windows][windows-shield]
+![macOS][macos-shield]
+![Linux][linux-shield]
+
+</div>
 
 <table border="0">
   <tr>
@@ -184,3 +189,8 @@ Apache-2.0 — see [LICENSE](LICENSE).
 [windows-shield]: https://img.shields.io/badge/Windows-supported-0078D6?logo=windows&logoColor=white
 [macos-shield]: https://img.shields.io/badge/macOS-supported-000000?logo=apple&logoColor=white
 [linux-shield]: https://img.shields.io/badge/Linux-supported-FCC624?logo=linux&logoColor=black
+[shell-shield]: https://img.shields.io/badge/-Shell-4EAA25?logo=gnu-bash&logoColor=white
+[quick-start-shield]: https://img.shields.io/badge/Quick_Start-5_min-blue?style=for-the-badge
+[telemetry-shield]: https://img.shields.io/badge/No_Telemetry-none-green?style=for-the-badge
+[discord-shield]: https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white
+[discord-link]: https://discord.com/invite/FhACaAAW9C
