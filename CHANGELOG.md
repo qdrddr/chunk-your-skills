@@ -1,25 +1,48 @@
 # Changelog
 
+All notable changes to **chunk-your-skills** are documented here. Version numbers follow the root
+`Cargo.toml` and are synced to Python, npm, Go, and C manifests via `scripts/sync-version.sh`.
+
+---
+
+## 1.0.9
+
+- Granular GitHub Actions E2E workflows for published crates, PyPI, npm, Go, and C packages.
+- CLI examples and [examples/README.md](examples/README.md) walkthrough for decompose/recompose.
+- Rust SDK section in [src/README.md](src/README.md).
+
+## 1.0.8
+
+- Removed token counting from all SDKs and FFI (C, Python, TypeScript, Go).
+- Added `scripts/publish-git.sh` release helper.
+- Updated example decomposed node files and E2E fixtures accordingly.
+
+## 1.0.7
+
+- Frontmatter helpers: `parse_frontmatter_fields`, `frontmatter_field`, and related SDK exports.
+- Markdown linting configuration updates.
+
+## 1.0.6
+
+- GitHub Actions workflow path fixes for cross-platform native binding builds.
+
+## 1.0.5
+
+- Windows Go cgo build improvements (`prepare-windows-cgo.sh`).
+
+## 1.0.4 – 1.0.2
+
+- Multi-language SDK publish pipeline (crates.io, PyPI, npm, GitHub Release C/Go assets).
+- Version sync across Rust, Python, TypeScript, Go, and CMake manifests.
+- Renamed release artifact env var to `CYT_RELEASE_VERSION`.
+
+## 1.0.1
+
+- Initial publish scripts for crates.io, npm, and PyPI.
+
 ## 1.0.0
 
-Major release: agent modules reorganization. Old import paths were removed without deprecation shims.
+A focused **chunk-your-skills** SDK:
 
-### Migration
-
-| Old import | New import |
-| --- | --- |
-| `cyt.launch.claude` | `cyt.agents.claude.launch` |
-| `cyt.launch.codex` | `cyt.agents.codex.launch` |
-| `cyt.launch.cursor` | `cyt.agents.cursor.launch` |
-| `cyt.skills.hook_setup` | `cyt.hook.setup_wizard` |
-| Cursor payload normalize in `cyt_client` | Server: `cyt.agents.cursor.skills_hook.normalize_cursor_payload` |
-| Anthropic proxy skills helpers in `cyt.skills.proxy_inject` | `cyt.agents.claude.skills_proxy` (facade re-exports remain) |
-| OpenAI proxy skills helpers in `cyt.skills.proxy_inject` | `cyt.agents.codex.skills_proxy` (facade re-exports remain) |
-| `cyt.common.agents` | Still valid; types also in `cyt.agents._types` |
-
-### Highlights
-
-- `cyt/agents/{claude,codex,cursor}/` — launch, hook install, proxy wiring, skills_hook, skills_proxy
-- `cyt_client` stays stdlib-only; sends `cyt_agent` and raw Cursor JSON; server normalizes
-- Cursor agent-transcript JSONL parsing for skills search query
-- Optional extras: `claude`, `codex`, `cursor`, `agents`
+- Rust core + CLI for `SKILL.md` pageindex, catalog materialization, and skinny-skill recomposition.
+- Python (`chunk_your_skills`), TypeScript, Go (cgo), and C (FFI) bindings over the same Rust crate.
