@@ -1,4 +1,4 @@
-use chunk_your_skills::{PageIndexConfig, build_skills_index, count_tokens};
+use chunk_your_skills::{PageIndexConfig, build_skills_index};
 use std::fs;
 use std::path::PathBuf;
 
@@ -27,10 +27,4 @@ fn build_skills_index_from_registry_crate() {
         .keys()
         .any(|k| k.starts_with("nodes/") && k.ends_with(".md")));
     let _ = fs::remove_dir_all(&tmp);
-}
-
-#[test]
-fn count_tokens_smoke() {
-    let count = count_tokens("hello world").expect("count_tokens");
-    assert!(count >= 1);
 }

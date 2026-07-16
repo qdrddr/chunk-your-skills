@@ -10,7 +10,6 @@ mod json_util;
 mod memory;
 mod pageindex;
 mod paths;
-mod tokens;
 
 pub use error::{
     CYT_ERR_ALLOC, CYT_ERR_INVALID_ARG, CYT_ERR_INVALID_HANDLE, CYT_ERR_INVALID_UTF8, CYT_ERR_IO,
@@ -22,8 +21,4 @@ pub use cache::{cyt_configure_memory_cache, cyt_ensure_skills_registry};
 pub use pageindex::{
     CytSkillsBuilder, cyt_frontmatter_field, cyt_parse_frontmatter_fields,
     cyt_token_count_from_decomposed_frontmatter,
-};
-pub use tokens::{
-    cyt_configure_tokenizer_defaults, cyt_count_json_tokens, cyt_count_tokens,
-    cyt_count_tokens_batch,
 };

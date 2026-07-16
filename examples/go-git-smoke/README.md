@@ -22,7 +22,7 @@ chmod +x prepare.sh ensure-ffi.sh run.sh
 2. Renders `go.mod` from `go.mod.in` with `replace => .staging/.../sdk/go`
 3. `ensure-ffi.sh` delegates to `sdk/go/cmd/chunk-native-ensure`, which downloads
    `chunk-your-skills-ffi-<triplet>.tar.gz` from GitHub Releases
-4. `run.sh` links the static archive and runs `CountTokens` / `Version`
+4. `run.sh` links the static archive and runs `Version`
 
 ## Manual steps
 
@@ -52,5 +52,4 @@ go build -o chunk-go-git-smoke .
 chunk-your-skills Go git smoke OK
   sdk module version: 1.1.0
   native lib version: 1.1.0
-  count_tokens(hello world): 2
 ```

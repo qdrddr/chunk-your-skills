@@ -114,6 +114,8 @@ def test_repair_skill_nodes() -> None:
 def test_token_count_from_decomposed_frontmatter() -> None:
     content = "---\ndoc_id: d1\nnode_id: 2\ntoken_count: 42\n---\n## Body\n"
     assert token_count_from_decomposed_frontmatter(content) == 42
+    empty = "---\ndoc_id: d1\nnode_id: 2\ntoken_count:\n---\n## Body\n"
+    assert token_count_from_decomposed_frontmatter(empty) is None
     assert token_count_from_decomposed_frontmatter("no frontmatter") is None
 
 
@@ -146,7 +148,7 @@ def test_build_skills_index_node_files_include_token_count() -> None:
         doc_id = next(iter(index["documents"]))
         rows = get_skill_line_content(index, doc_id, node_id_specs=["1"])
         if rows:
-            assert rows[0].get("token_count", 0) > 0
+            assert "token_count" not in rows[0]
 
 
 def test_get_version_matches_package() -> None:

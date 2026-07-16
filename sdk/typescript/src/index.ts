@@ -2,12 +2,6 @@
 
 export { getVersion } from "./core.js";
 export {
-  configureTokenizerDefaults,
-  countJsonTokens,
-  countTokens,
-  countTokensBatch,
-} from "./tokens.js";
-export {
   configureMemoryCache,
   ensureSkillsRegistry,
   type CachePolicy,

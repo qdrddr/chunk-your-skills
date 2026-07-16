@@ -19,7 +19,6 @@ go run ./sdk/go/cmd/chunk-native-ensure
 ```go
 import "github.com/qdrddr/chunk-your-skills/sdk/go/chunkyourskills"
 
-count, err := chunkyourskills.CountTokens("hello world")
 version, err := chunkyourskills.Version()
 ```
 

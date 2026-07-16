@@ -45,9 +45,8 @@ fn write_node_markdown_files(
             text.to_string()
         };
 
-        let token_count = crate::tiktoken::count_tokens_or_min(&body);
         let md_content = format!(
-            "---\ndoc_id: {}\nnode_id: {node_id}\nline_num: {line_num}\ntoken_count: {token_count}\n---\n{body}",
+            "---\ndoc_id: {}\nnode_id: {node_id}\nline_num: {line_num}\ntoken_count:\n---\n{body}",
             doc.id
         );
 

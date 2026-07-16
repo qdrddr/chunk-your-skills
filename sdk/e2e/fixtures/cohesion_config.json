@@ -2,6 +2,5 @@
   "window_mode": "word",
   "chunk_size": 2048,
   "similarity_window": 10,
-  "skip_window": 0,
-  "token_counter": "tiktoken"
+  "skip_window": 0
 }

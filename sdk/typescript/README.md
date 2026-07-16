@@ -12,12 +12,11 @@ npm test
 ```typescript
 import {
   buildSkillsIndex,
-  countTokens,
   defaultPageIndexConfig,
 } from "chunk-your-skills";
 
 const index = buildSkillsIndex(["/path/to/skills"], defaultPageIndexConfig());
-console.log(countTokens("hello"));
+console.log(Object.keys(index.documents));
 ```
 
 Native `.node` binaries are built from the root crate (`../../Cargo.toml`) and published in the npm package.

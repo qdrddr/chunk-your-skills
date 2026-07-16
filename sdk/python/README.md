@@ -10,10 +10,10 @@ uv run maturin develop --release
 ```
 
 ```python
-from chunk_your_skills import PageIndexConfig, build_skills_index, count_tokens
+from chunk_your_skills import PageIndexConfig, build_skills_index
 
 index = build_skills_index(["/path/to/skills"], PageIndexConfig())
-print(count_tokens("hello"))
+print(index["documents"])
 ```
 
 The native extension is built from the root crate via `manifest-path = "../../Cargo.toml"` in `pyproject.toml`.

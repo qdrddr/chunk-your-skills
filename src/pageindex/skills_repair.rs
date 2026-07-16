@@ -77,9 +77,8 @@ fn attach_missing_nodes_to_structure(
         } else {
             text.to_string()
         };
-        let token_count = crate::tiktoken::count_tokens_or_min(&body);
         let md_content = format!(
-            "---\ndoc_id: {doc_id}\nnode_id: {node_id}\nline_num: {line_num}\ntoken_count: {token_count}\n---\n{body}",
+            "---\ndoc_id: {doc_id}\nnode_id: {node_id}\nline_num: {line_num}\ntoken_count:\n---\n{body}",
         );
         let rel = node_md_rel(node_id);
         index.files.insert(rel.clone(), md_content.clone());

@@ -1,8 +1,7 @@
 #![cfg(feature = "ffi")]
 
 use chunk_your_skills::ffi::{
-    CYT_OK, cyt_count_tokens, cyt_free_string, cyt_frontmatter_field, cyt_get_version,
-    cyt_parse_frontmatter_fields,
+    CYT_OK, cyt_free_string, cyt_frontmatter_field, cyt_get_version, cyt_parse_frontmatter_fields,
 };
 use std::ffi::CStr;
 use std::os::raw::c_char;
@@ -17,13 +16,6 @@ unsafe fn read_out(out: *mut c_char) -> String {
     let s = unsafe { CStr::from_ptr(out).to_string_lossy().into_owned() };
     unsafe { cyt_free_string(out) };
     s
-}
-
-#[test]
-fn count_tokens_smoke() {
-    let text = cstr(b"hello world\0");
-    let count = unsafe { cyt_count_tokens(text.as_ptr()) };
-    assert!(count >= 1);
 }
 
 #[test]

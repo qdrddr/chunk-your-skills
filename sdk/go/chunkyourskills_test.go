@@ -28,17 +28,6 @@ func TestParseSkillChunkIDsSmoke(t *testing.T) {
 	}
 }
 
-func TestCountTokensSmoke(t *testing.T) {
-	t.Parallel()
-	n, err := chunkyourskills.CountTokens("hello world")
-	if err != nil {
-		t.Fatalf("CountTokens: %v", err)
-	}
-	if n <= 0 {
-		t.Fatalf("expected positive token count, got %d", n)
-	}
-}
-
 func TestVersionSmoke(t *testing.T) {
 	t.Parallel()
 	v, err := chunkyourskills.Version()

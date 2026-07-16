@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Wait until a published package version is available on a registry.
-# Usage: CYT_RELEASE_VERSION=0.1.10 ./wait-registry.sh <crate|pypi-sdk|pypi-app|npm|tag|release-assets>
+# Usage: CYT_RELEASE_VERSION=0.1.10 ./wait-registry.sh <crate|pypi-sdk|pypi-app|pypi-app-chain|npm|tag|release-assets>
 set -euo pipefail
 
 TARGET="${1:-}"
 VERSION="${CYT_RELEASE_VERSION:-${CYS_RELEASE_VERSION:-}}"
 if [[ -z "$TARGET" || -z "$VERSION" ]]; then
-	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <crate|pypi-sdk|pypi-app|npm|tag|release-assets>" >&2
+	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <crate|pypi-sdk|pypi-app|pypi-app-chain|npm|tag|release-assets>" >&2
 	exit 1
 fi
 
@@ -16,11 +16,8 @@ SLEEP_SECS="${WAIT_REGISTRY_SLEEP_SECS:-30}"
 pypi_has_version() {
 	local package="$1"
 	local ver="$2"
-	# Prefer uv resolution (same index as `uv sync`) when available.
-	if command -v uv >/dev/null 2>&1; then
-		uv pip install "${package}==${ver}" --dry-run -q >/dev/null 2>&1
-		return
-	fi
+	# PyPI JSON API is reliable without a virtualenv. `uv pip install --dry-run`
+	# fails when no venv exists (common in CI wait steps before `uv sync`).
 	PYPI_PACKAGE="$package" PYPI_VERSION="$ver" python3 -c "
 import json
 import os
@@ -109,6 +106,10 @@ pypi-sdk)
 	wait_loop "PyPI/chunk-your-skills" pypi_has_version "chunk-your-skills" "$VERSION"
 	;;
 pypi-app)
+	wait_loop "PyPI/clear-your-tools" pypi_has_version "clear-your-tools" "$VERSION"
+	;;
+pypi-app-chain)
+	wait_loop "PyPI/chunk-your-skills" pypi_has_version "chunk-your-skills" "$VERSION"
 	wait_loop "PyPI/clear-your-tools" pypi_has_version "clear-your-tools" "$VERSION"
 	;;
 npm)

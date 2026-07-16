@@ -14,11 +14,6 @@ pub const EXPORTS: &[FfiExport] = &[
     export("cyt_free_string", "core"),
     export("cyt_get_last_error", "core"),
     export("cyt_get_version", "core"),
-    // tokens
-    export("cyt_count_tokens", "tokens"),
-    export("cyt_count_json_tokens", "tokens"),
-    export("cyt_count_tokens_batch", "tokens"),
-    export("cyt_configure_tokenizer_defaults", "tokens"),
     // cache
     export("cyt_configure_memory_cache", "cache"),
     export("cyt_ensure_skills_registry", "cache"),

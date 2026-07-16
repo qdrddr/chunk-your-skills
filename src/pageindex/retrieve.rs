@@ -269,7 +269,11 @@ pub fn token_count_from_decomposed_frontmatter(content: &str) -> Option<usize> {
     let frontmatter = &content[3..3 + end];
     for line in frontmatter.lines() {
         if let Some(rest) = line.strip_prefix("token_count:") {
-            return rest.trim().parse().ok();
+            let value = rest.trim();
+            if value.is_empty() || value == "null" || value == "~" {
+                return None;
+            }
+            return value.parse().ok();
         }
     }
     None
@@ -301,5 +305,11 @@ mod tests {
             merge_node_id_specs(&["1-3", "5", "8"]),
             Ok(vec![1, 2, 3, 5, 8])
         );
+    }
+
+    #[test]
+    fn token_count_from_frontmatter_empty_is_none() {
+        let content = "---\ndoc_id: d1\nnode_id: 2\ntoken_count:\n---\n## Body\n";
+        assert_eq!(token_count_from_decomposed_frontmatter(content), None);
     }
 }

@@ -11,7 +11,6 @@ pub mod pageindex;
 pub mod paths;
 pub mod skills_builder;
 pub mod skills_io;
-pub mod tiktoken;
 
 #[cfg(feature = "python")]
 pub mod python;
@@ -47,8 +46,4 @@ pub use skills_builder::SkillsBuilder;
 pub use skills_io::{
     load_decomposed_files_for_index, load_skills_index_from_dir, resolve_doc_id,
     resolve_doc_id_from_skill_path, skills_index_from_decomposed_dir, write_skills_index,
-};
-pub use tiktoken::{
-    configure as configure_tiktoken, count_json_tokens, count_tokens, count_tokens_or_min,
-    snapshot as tiktoken_snapshot,
 };

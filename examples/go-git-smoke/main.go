@@ -17,15 +17,9 @@ func main() {
 		log.Fatalf("Version(): %v", err)
 	}
 
-	count, err := chunkyourskills.CountTokens("hello world")
-	if err != nil {
-		log.Fatalf("CountTokens(): %v", err)
-	}
-
 	fmt.Println("chunk-your-skills Go git smoke OK")
 	fmt.Printf("  sdk module version: %s\n", chunkyourskills.ModuleVersion)
 	fmt.Printf("  native lib version: %s\n", libVersion)
-	fmt.Printf("  count_tokens(hello world): %d\n", count)
 
 	if wd, err := os.Getwd(); err == nil {
 		fmt.Printf("  cwd: %s\n", wd)

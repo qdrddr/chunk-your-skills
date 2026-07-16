@@ -1,9 +1,6 @@
 #[path = "pageindex_python.rs"]
 mod pageindex_python;
 
-#[path = "tokens_python.rs"]
-mod tokens_python;
-
 #[path = "cache_python.rs"]
 mod cache_python;
 
@@ -29,7 +26,6 @@ const fn get_version_py() -> &'static str {
 fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_version_py, m)?)?;
     pageindex_python::register(m)?;
-    tokens_python::register(m)?;
     cache_python::register(m)?;
     Ok(())
 }

@@ -1,7 +1,7 @@
 # End-to-end tests against published packages (crates.io, PyPI, npm).
 # Does not use monorepo SDK sources — installs from public registries only.
 #
-# Runs after publish-crates.yml succeeds (workflow_run). Polls each registry until
+# Runs after publish workflows succeed (workflow_run). Polls each registry until
 # CYT_RELEASE_VERSION is installable, then runs isolated harnesses under sdk/e2e/.
 # Wait steps use continue-on-error so a registry timeout still runs the test step
 # (publish may still be in flight; the install/test step is the real gate).
@@ -10,7 +10,10 @@ name: 4. E2E published packages
 
 on:
   workflow_run:
-    workflows: ["1. Publish chunk-your-skills to crates.io"]
+    workflows:
+      - "1. Publish chunk-your-skills to crates.io"
+      - "2. Publish chunk-your-skills to PyPI"
+      - "2. Publish chunk-your-skills to npm"
     types: [completed]
 
 concurrency:
@@ -43,7 +46,9 @@ jobs:
     name: 1. E2E chunk-your-skills (crates.io)
     needs: resolve-version
     if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.name == '1. Publish chunk-your-skills to crates.io'
     runs-on: ubuntu-latest
     env:
       CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -68,7 +73,9 @@ jobs:
     name: 2. E2E chunk-your-skills (PyPI)
     needs: resolve-version
     if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.name == '2. Publish chunk-your-skills to PyPI'
     runs-on: ubuntu-latest
     env:
       CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -90,6 +97,8 @@ jobs:
 
       - name: Test published Python SDK
         working-directory: sdk/e2e/python
+        env:
+          UV_SYNC_REGISTRY_TARGET: pypi-sdk
         run: |
           ../scripts/uv-sync-with-retry.sh --group test
           uv run pytest
@@ -98,7 +107,9 @@ jobs:
     name: 2. E2E chunk-your-skills (npm)
     needs: resolve-version
     if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.name == '2. Publish chunk-your-skills to npm'
     runs-on: ubuntu-latest
     env:
       CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -127,7 +138,9 @@ jobs:
     name: 3. E2E clear-your-tools (PyPI)
     needs: resolve-version
     if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.name == '2. Publish chunk-your-skills to PyPI'
     runs-on: ubuntu-latest
     env:
       CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -145,12 +158,14 @@ jobs:
 
       - name: Wait for PyPI (SDK then app)
         continue-on-error: true
-        run: sdk/e2e/scripts/wait-registry.sh pypi-app
+        run: sdk/e2e/scripts/wait-registry.sh pypi-app-chain
 
       - name: Test published app package
         working-directory: sdk/e2e/clear-your-tools
         env:
           CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
+          UV_SYNC_REGISTRY_TARGET: pypi-app-chain
+          UV_SYNC_MAX_ATTEMPTS: 120
         run: |
           ../scripts/uv-sync-with-retry.sh --group test
           uv run pytest
@@ -159,7 +174,9 @@ jobs:
     name: 4. E2E Go SDK (GitHub tag)
     needs: resolve-version
     if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.name == '1. Publish chunk-your-skills to crates.io'
     runs-on: ubuntu-latest
     env:
       CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -189,7 +206,9 @@ jobs:
     name: 4. E2E C SDK (GitHub tag)
     needs: resolve-version
     if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.name == '1. Publish chunk-your-skills to crates.io'
     runs-on: ubuntu-latest
     env:
       CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}

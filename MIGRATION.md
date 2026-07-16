@@ -22,7 +22,6 @@ The proxy application (`cyt` CLI, `src/cyt/`, hooks, pruners) remains in clear-y
 - Pageindex: `build_skills_index`, `SkillsBuilder`, `md_to_tree`, reconstruct/retrieve skill content
 - BM25 cohesion chunking for skill nodes
 - Skills registry cache (`ensure_skills_registry`)
-- Token counting (`count_tokens`, etc.)
 
 **Removed from this repo (stay in clear-your-tools):**
 

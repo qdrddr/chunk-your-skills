@@ -54,7 +54,7 @@ rust)
 python)
 	echo "=== Python SDK (PyPI) ==="
 	maybe_wait "PyPI/chunk-your-skills" pypi-sdk
-	(cd "${ROOT}/python" && "${ROOT}/scripts/uv-sync-with-retry.sh" --group test && uv run pytest)
+	(cd "${ROOT}/python" && UV_SYNC_REGISTRY_TARGET=pypi-sdk "${ROOT}/scripts/uv-sync-with-retry.sh" --group test && uv run pytest)
 	;;
 typescript)
 	echo "=== TypeScript SDK (npm) ==="
@@ -63,8 +63,8 @@ typescript)
 	;;
 clear-your-tools)
 	echo "=== clear-your-tools (PyPI) ==="
-	maybe_wait "PyPI/clear-your-tools" pypi-app
-	(cd "${ROOT}/clear-your-tools" && "${ROOT}/scripts/uv-sync-with-retry.sh" --group test && uv run pytest)
+	maybe_wait "PyPI/clear-your-tools" pypi-app-chain
+	(cd "${ROOT}/clear-your-tools" && UV_SYNC_REGISTRY_TARGET=pypi-app-chain UV_SYNC_MAX_ATTEMPTS="${UV_SYNC_MAX_ATTEMPTS:-120}" "${ROOT}/scripts/uv-sync-with-retry.sh" --group test && uv run pytest)
 	;;
 go)
 	echo "=== Go SDK (GitHub tag + release C FFI) ==="

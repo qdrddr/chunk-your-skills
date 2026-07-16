@@ -37,12 +37,6 @@ from chunk_your_skills.pageindex import (
     write_reconstructed_skill,
     write_skills_index,
 )
-from chunk_your_skills.tokens import (
-    configure_tokenizer_defaults,
-    count_json_tokens,
-    count_tokens,
-    count_tokens_batch,
-)
 from chunk_your_skills.version import get_version
 
 __all__ = [
@@ -55,10 +49,6 @@ __all__ = [
     "build_page_index_only",
     "build_skills_index",
     "configure_memory_cache",
-    "configure_tokenizer_defaults",
-    "count_json_tokens",
-    "count_tokens",
-    "count_tokens_batch",
     "default_page_index_config",
     "ensure_skills_registry",
     "finalize_skill_document_json",

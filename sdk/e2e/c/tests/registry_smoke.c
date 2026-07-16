@@ -26,11 +26,5 @@ int main(void) {
     }
     cyt_free_string(out);
 
-    long count = cyt_count_tokens("hello world");
-    if (count < 1) {
-        fprintf(stderr, "expected count_tokens >= 1, got %ld\n", count);
-        return 1;
-    }
-
     return 0;
 }

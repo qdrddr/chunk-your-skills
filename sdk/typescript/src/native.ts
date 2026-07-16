@@ -40,13 +40,6 @@ export const parseFrontmatterFieldsNative = native.parseFrontmatterFieldsNapi;
 export const frontmatterFieldNative = native.frontmatterFieldNapi;
 export const SkillsBuilderNative = native.SkillsBuilderNapi;
 
-// Tokens
-export const countTokensNative = native.countTokens;
-export const countTokensBatchNative = native.countTokensBatch;
-export const countJsonTokensNative = native.countJsonTokens;
-export const configureTokenizerDefaultsNative =
-  native.configureTokenizerDefaults;
-
 // Cache
 export const ensureSkillsRegistryNative = native.ensureSkillsRegistry;
 export const configureMemoryCacheNative = native.configureMemoryCache;
