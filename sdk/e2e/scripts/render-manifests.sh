@@ -90,32 +90,6 @@ EOF
 	render "${ROOT}/typescript/package.json.in" "$dst"
 }
 
-render_clear_your_tools_pyproject() {
-	local dst="${ROOT}/clear-your-tools/pyproject.toml"
-	mkdir -p "$(dirname "$dst")"
-	if [[ "${CYT_E2E_USE_WORKSPACE:-}" == "1" ]]; then
-		cat >"$dst" <<'EOF'
-[project]
-name = "clear-your-tools-registry-e2e"
-version = "0.0.0"
-requires-python = ">=3.13,<4.0"
-dependencies = ["clear-your-tools[all]"]
-
-[dependency-groups]
-test = ["pytest>=8.0"]
-
-[tool.uv.sources]
-clear-your-tools = { path = "../../../", editable = true }
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-EOF
-		echo "rendered ${dst} (workspace path=../../../)"
-		return 0
-	fi
-	render "${ROOT}/clear-your-tools/pyproject.toml.in" "$dst"
-}
-
 render_go_mod() {
 	local src="$1"
 	local dst="$2"
@@ -129,5 +103,5 @@ render_go_mod() {
 render_rust_cargo
 render_python_pyproject
 render_typescript_package
-render_clear_your_tools_pyproject
 render_go_mod "${ROOT}/go/go.mod.in" "${ROOT}/go/go.mod"
+

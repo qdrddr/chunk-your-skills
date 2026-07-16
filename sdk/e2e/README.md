@@ -8,7 +8,6 @@ checkout**—not the active monorepo tree (unless `--workspace` is set).
 | [`rust/`](rust/) | [crates.io](https://crates.io/crates/chunk-your-skills) | `chunk-your-skills` |
 | [`python/`](python/) | [PyPI](https://pypi.org/project/chunk-your-skills/) | `chunk-your-skills` |
 | [`typescript/`](typescript/) | [npm](https://www.npmjs.com/package/chunk-your-skills) | `chunk-your-skills` |
-| [`clear-your-tools/`](clear-your-tools/) | [PyPI](https://pypi.org/project/clear-your-tools/) | `clear-your-tools` (separate proxy app) |
 | [`go/`](go/) | [GitHub tag](https://github.com/qdrddr/chunk-your-skills/tags) | `github.com/qdrddr/chunk-your-skills/sdk/go` |
 | [`c/`](c/) | [GitHub tag](https://github.com/qdrddr/chunk-your-skills/tags) | `sdk/c` + `libchunk_your_skills` built from tagged root crate |
 
@@ -28,7 +27,7 @@ checkout**—not the active monorepo tree (unless `--workspace` is set).
 ./sdk/e2e/scripts/run-local.sh --workspace --skip-wait go c
 ```
 
-Targets: `rust`, `python`, `typescript`, `clear-your-tools`, `go`, `c`, `all` (default).
+Targets: `rust`, `python`, `typescript`, `go`, `c`, `all` (default).
 
 Go and C harnesses clone tag `vX.Y.Z` into `CYT_E2E_STAGING`, build `libchunk_your_skills` from the tagged root crate,
 then run isolated tests.

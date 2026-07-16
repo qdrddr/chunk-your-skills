@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Wait until a published package version is available on a registry.
-# Usage: CYT_RELEASE_VERSION=0.1.10 ./wait-registry.sh <crate|pypi-sdk|pypi-app|pypi-app-chain|npm|tag|release-assets>
+# Usage: CYT_RELEASE_VERSION=0.1.10 ./wait-registry.sh <crate|pypi-sdk|npm|tag|release-assets>
 set -euo pipefail
 
 TARGET="${1:-}"
 VERSION="${CYT_RELEASE_VERSION:-${CYS_RELEASE_VERSION:-}}"
 if [[ -z "$TARGET" || -z "$VERSION" ]]; then
-	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <crate|pypi-sdk|pypi-app|pypi-app-chain|npm|tag|release-assets>" >&2
+	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <crate|pypi-sdk|npm|tag|release-assets>" >&2
 	exit 1
 fi
 
@@ -104,13 +104,6 @@ crate)
 	;;
 pypi-sdk)
 	wait_loop "PyPI/chunk-your-skills" pypi_has_version "chunk-your-skills" "$VERSION"
-	;;
-pypi-app)
-	wait_loop "PyPI/clear-your-tools" pypi_has_version "clear-your-tools" "$VERSION"
-	;;
-pypi-app-chain)
-	wait_loop "PyPI/chunk-your-skills" pypi_has_version "chunk-your-skills" "$VERSION"
-	wait_loop "PyPI/clear-your-tools" pypi_has_version "clear-your-tools" "$VERSION"
 	;;
 npm)
 	wait_loop "npm/chunk-your-skills" npm_has_version "$VERSION"

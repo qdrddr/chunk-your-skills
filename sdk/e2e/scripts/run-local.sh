@@ -16,12 +16,12 @@ VERSION:
   version from root Cargo.toml.
 
 TARGET:
-  rust | python | typescript | clear-your-tools | go | c | all
+  rust | python | typescript | go | c | all
   Default: all
 
 OPTIONS:
   --skip-wait, -s   Skip polling registries (packages must already be published)
-  --workspace, -w   Use monorepo checkout (path deps for rust/python/ts/app; staging for go/c)
+  --workspace, -w   Use monorepo checkout (path deps for rust/python/ts; staging for go/c)
   --help, -h        Show this help
 
 Environment:
@@ -86,7 +86,7 @@ while [[ $# -gt 0 ]]; do
 		usage
 		exit 0
 		;;
-	all | rust | python | typescript | clear-your-tools | go | c)
+	all | rust | python | typescript | go | c)
 		TARGETS+=("$1")
 		shift
 		;;
@@ -140,7 +140,7 @@ for target in "${TARGETS[@]}"; do
 done
 
 if [[ "$run_all" -eq 1 ]]; then
-	for target in rust python typescript clear-your-tools go c; do
+	for target in rust python typescript go c; do
 		"${ROOT}/scripts/run-target.sh" "$target"
 	done
 	echo "All registry E2E smokes passed."

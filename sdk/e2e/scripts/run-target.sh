@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Run one registry E2E harness (render manifests first via run-all.sh or run-local.sh).
-# Usage: CYT_RELEASE_VERSION=x.y.z ./run-target.sh <rust|python|typescript|clear-your-tools|go|c>
+# Usage: CYT_RELEASE_VERSION=x.y.z ./run-target.sh <rust|python|typescript|go|c>
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-}"
 
 if [[ -z "$TARGET" ]]; then
-	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <rust|python|typescript|clear-your-tools|go|c>" >&2
+	echo "usage: CYT_RELEASE_VERSION=x.y.z $0 <rust|python|typescript|go|c>" >&2
 	exit 1
 fi
 
@@ -61,11 +61,6 @@ typescript)
 	maybe_wait "npm/chunk-your-skills" npm
 	(cd "${ROOT}/typescript" && npm install && npm test)
 	;;
-clear-your-tools)
-	echo "=== clear-your-tools (PyPI) ==="
-	maybe_wait "PyPI/clear-your-tools" pypi-app-chain
-	(cd "${ROOT}/clear-your-tools" && UV_SYNC_REGISTRY_TARGET=pypi-app-chain UV_SYNC_MAX_ATTEMPTS="${UV_SYNC_MAX_ATTEMPTS:-120}" "${ROOT}/scripts/uv-sync-with-retry.sh" --group test && uv run pytest)
-	;;
 go)
 	echo "=== Go SDK (GitHub tag + release C FFI) ==="
 	maybe_wait "GitHub tag v${CYT_RELEASE_VERSION}" tag
@@ -89,7 +84,7 @@ c)
 	;;
 *)
 	echo "unknown target: ${TARGET}" >&2
-	echo "expected: rust, python, typescript, clear-your-tools, go, c" >&2
+	echo "expected: rust, python, typescript, go, c" >&2
 	exit 1
 	;;
 esac

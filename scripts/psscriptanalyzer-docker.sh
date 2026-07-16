@@ -25,7 +25,7 @@ if [[ -z "$IMAGE" ]]; then
 	esac
 fi
 
-MODULE_VOLUME="${PSSA_DOCKER_MODULE_VOLUME:-clear-your-tools-pssa-modules}"
+MODULE_VOLUME="${PSSA_DOCKER_MODULE_VOLUME:-chunk-your-skills-pssa-modules}"
 
 docker run --rm \
 	--pull=missing \

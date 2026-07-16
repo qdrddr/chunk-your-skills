@@ -3,7 +3,7 @@
 # Usage: ./uv-sync-with-retry.sh [--group test] [other uv sync args...]
 #
 # Optional env:
-#   UV_SYNC_REGISTRY_TARGET  wait-registry target (pypi-sdk, pypi-app-chain, ...)
+#   UV_SYNC_REGISTRY_TARGET  wait-registry target (pypi-sdk, ...)
 #   UV_SYNC_WAIT_EVERY       run wait-registry every N failed attempts (default: 10)
 set -euo pipefail
 

@@ -122,9 +122,6 @@ sdk/e2e/python/.venv/
 sdk/e2e/typescript/package.json
 sdk/e2e/typescript/package-lock.json
 sdk/e2e/typescript/node_modules/
-sdk/e2e/clear-your-tools/pyproject.toml
-sdk/e2e/clear-your-tools/uv.lock
-sdk/e2e/clear-your-tools/.venv/
 sdk/e2e/go/go.mod
 sdk/e2e/go/go.sum
 
@@ -149,3 +146,4 @@ graphify-out/cache/
 .debug/rules/cyt-injection.mdc
 .git_old
 .gitnexus/
+
