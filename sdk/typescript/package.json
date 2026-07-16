@@ -1,6 +1,6 @@
 {
   "name": "chunk-your-skills",
-  "version": "2.0.0",
+  "version": "1.0.11",
   "description": "TypeScript SDK for chunk-your-skills — SKILL.md pageindex and skinny-skill recomposition",
   "keywords": [
     "skills",
