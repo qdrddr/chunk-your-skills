@@ -1,0 +1,91 @@
+# End-to-end tests for Go/C SDKs against a GitHub tag after crates.io publish succeeds.
+
+name: 3. E2E published (Go/C)
+
+on:
+  workflow_run:
+    workflows:
+      - "1. Publish chunk-your-skills to crates.io"
+    types: [completed]
+
+concurrency:
+  group: e2e-published-go-c-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  resolve-version:
+    name: Resolve release version
+    if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resolve version
+        id: parse
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PARENT_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: sdk/e2e/scripts/resolve-version-from-parent.sh
+
+  e2e-go:
+    name: 1. E2E Go SDK (GitHub tag)
+    needs: resolve-version
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Render manifests
+        run: sdk/e2e/scripts/render-manifests.sh
+
+      - name: Wait for GitHub tag
+        continue-on-error: true
+        run: sdk/e2e/scripts/wait-registry.sh tag
+
+      - name: Test published Go module
+        run: sdk/e2e/scripts/run-target.sh go
+
+  e2e-c:
+    name: 2. E2E C SDK (GitHub tag)
+    needs: resolve-version
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      CYT_RELEASE_VERSION: ${{ needs.resolve-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Render manifests
+        run: sdk/e2e/scripts/render-manifests.sh
+
+      - name: Wait for GitHub tag
+        continue-on-error: true
+        run: sdk/e2e/scripts/wait-registry.sh tag
+
+      - name: Test published C SDK
+        run: sdk/e2e/scripts/run-target.sh c

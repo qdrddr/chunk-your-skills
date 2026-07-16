@@ -1,4 +1,4 @@
-name: 2. Publish chunk-your-skills to npm
+name: 3. Publish chunk-your-skills to npm
 
 on:
   workflow_run:
@@ -235,3 +235,15 @@ jobs:
       - name: Publish to npm
         working-directory: sdk/typescript
         run: npm publish --access public
+
+      - name: Upload release version for downstream workflows
+        if: needs.resolve-version.outputs.version != ''
+        run: printf '%s' "${{ needs.resolve-version.outputs.version }}" > cys-release-version.txt
+
+      - name: Store release version artifact
+        if: needs.resolve-version.outputs.version != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: cys-release-version
+          path: cys-release-version.txt
+          if-no-files-found: error

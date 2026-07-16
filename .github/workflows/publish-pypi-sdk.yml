@@ -1,4 +1,4 @@
-name: 2. Publish chunk-your-skills to PyPI
+name: 3. Publish chunk-your-skills to PyPI
 
 on:
   workflow_run:

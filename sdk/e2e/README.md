@@ -33,4 +33,4 @@ Targets: `rust`, `python`, `typescript`, `clear-your-tools`, `go`, `c`, `all` (d
 Go and C harnesses clone tag `vX.Y.Z` into `CYT_E2E_STAGING`, build `libchunk_your_skills` from the tagged root crate,
 then run isolated tests.
 
-See [`.github/workflows/e2e-published-sdk.yml`](../../.github/workflows/e2e-published-sdk.yml) for CI wiring.
+See [`.github/workflows/`](../../.github/workflows/) for CI wiring (`e2e-published-*.yml` after publish workflows).
