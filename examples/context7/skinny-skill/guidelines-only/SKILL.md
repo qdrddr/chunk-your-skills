@@ -1,9 +1,12 @@
 ---
-doc_id: skill
-node_id: 8
-line_num: 54
-token_count:
+name: context7-mcp
+description: >-
+  This skill should be used when the user asks about libraries, frameworks,
+  API references, or needs code examples. Activates for setup questions, code
+  generation involving libraries, or mentions of specific frameworks like React,
+  Vue, Next.js, Prisma, Supabase, etc.
 ---
+
 ## Guidelines
 
 - **Be specific**: Pass the user's full question as the query for better results
