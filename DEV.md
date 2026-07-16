@@ -56,20 +56,8 @@ cd sdk/python && uv run pytest
 
 ## CLI examples
 
-Build the CLI locally, then exercise decompose/recompose against the bundled context7 skill:
-
-```bash
-cargo build -p chunk-your-skills --release
-
-# Decompose examples/context7/original/SKILL.md → examples/context7/decomposed/
-./examples/decompose.sh
-
-# Recompose skinny skills (catalog, in-memory, ranges, --keep-all-headers)
-./examples/recompose.sh
-```
-
-Node IDs and section mapping are documented in `examples/recompose.sh` and
-`examples/context7/decomposed/nodes/page_index.json`.
+See [examples/README.md](examples/README.md) for `decompose.sh` / `recompose.sh`, node IDs, and
+skinny-skill output paths.
 
 ## Version sync
 

@@ -1,6 +1,6 @@
 # Go SDK git smoke test
 
-Minimal app that consumes `github.com/qdrddr/chunk-your-skills/sdk/go` from git tag **v1.1.0** and checks that:
+Minimal app that consumes `github.com/qdrddr/chunk-your-skills/sdk/go` from git tag **v1.1.0** and verifies:
 
 1. A sparse clone of the release tag provides the Go SDK sources and root Rust crate
 2. C FFI artifacts can be fetched from the matching GitHub Release

@@ -112,39 +112,27 @@ Go SDK via cgo (`import chunkyourskills`)
 
 </details>
 
-## Quick start (CLI)
+## Quick start
+
+Install the CLI:
 
 ```bash
-cargo install where chunk-your-skills
-
-# Or local build for developers
-cargo build -p chunk-your-skills --release
-
-# Decompose one skill file into .catalog/
-./target/release/chunk-your-skills decompose --skill path/to/SKILL.md --output .catalog
-
-# Recompose skinny skill from node IDs (catalog from decompose)
-./target/release/chunk-your-skills recompose \
-  --catalog .catalog \
-  --path path/to/SKILL.md \
-  --node-id 1-3,5,8 \
-  --output skinny/SKILL.md
-
-# Recompose in memory directly from a skill file (no catalog)
-./target/release/chunk-your-skills recompose \
-  --skill path/to/SKILL.md \
-  --node-id 1,2 \
-  --output skinny/SKILL.md
+cargo install chunk-your-skills
 ```
 
-## Quick start (Python)
+Or build locally: `cargo build -p chunk-your-skills --release`.
+
+Try the bundled walkthrough — decompose a sample skill, then recompose skinny variants:
 
 ```bash
-cd sdk/python
-uv sync
-uv run maturin develop --release
-uv run python -c "from chunk_your_skills import build_skills_index; print(build_skills_index)"
+./examples/decompose.sh
+export PATH="$PWD/target/release:$PATH"
+./examples/recompose.sh
 ```
+
+See [examples/README.md](examples/README.md) for node IDs, output paths, and CLI flags.
+
+For SDK usage, see the language READMEs below. Python quick start: [sdk/python/README.md](sdk/python/README.md).
 
 ## SDKs
 
@@ -167,21 +155,7 @@ uv run python -c "from chunk_your_skills import build_skills_index; print(build_
 
 ## Development
 
-```bash
-./scripts/local-dev.sh all          # Rust + all SDKs
-./scripts/local-dev.sh sdk-python   # Python only
-./scripts/sync-version.sh           # propagate semver from root Cargo.toml
-```
-
-## Layout
-
-```text
-Cargo.toml, src/              # Rust core + CLI + FFI (root crate)
-sdk/python/                   # PyO3 bindings (chunk_your_skills)
-sdk/typescript/               # napi-rs bindings
-sdk/c/                        # C FFI + CMake
-sdk/go/                       # cgo bindings (chunkyourskills)
-```
+See [DEV.md](DEV.md) for local workflow, version sync, and publish notes.
 
 ## License
 
