@@ -22,7 +22,7 @@ for the MCP tool-gating proxy.
 
 ## What it does
 
-1. **Decompose** — parse `SKILL.md` into a tree of nodes (frontmatter, preamble, heading sections).
+1. **Chunk/Decompose** — parse `SKILL.md` into a tree of nodes (frontmatter, preamble, heading sections).
 2. **Cache** — write `metadata.json`, `nodes/page_index.json`, and `nodes/n{id}.md` under a catalog directory.
 3. **Recompose** — rebuild a skinny `SKILL.md` from selected node IDs.
 
