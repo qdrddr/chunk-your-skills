@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(chunk-your-skills-c VERSION 2.0.1 LANGUAGES C)
+project(chunk-your-skills-c VERSION 2.0.2 LANGUAGES C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
