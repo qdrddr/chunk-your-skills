@@ -3,6 +3,7 @@
 #
 # Usage:
 #   ./scripts/deps/verify-pins.sh
+#   ./scripts/deps/verify-pins.sh --short
 #   ./scripts/deps/verify-pins.sh --manifest-lint
 #   ./scripts/deps/verify-pins.sh --skip rust --skip npm
 #   ./scripts/deps/verify-pins.sh --output-dir /tmp/pin-audit
@@ -14,9 +15,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/../lib/shorten-paths.sh"
+export SHORTEN_ROOT="${REPO_ROOT}"
+
 DO_MANIFEST_LINT=0
 DO_REPORT=1
 OUTPUT_DIR=""
+SHORT=0
 SKIP_PYTHON=0
 SKIP_RUST=0
 SKIP_NPM=0
@@ -29,12 +35,45 @@ MANIFEST_LINT_FILE=""
 FAILURES=0
 
 die() {
-	echo "error: $*" >&2
+	printf 'error: %s\n' "$*" | shorten_paths >&2
 	exit 1
 }
 
 info() {
-	echo "==> $*"
+	if [[ "${SHORT}" -eq 1 ]]; then
+		return 0
+	fi
+	printf '==> %s\n' "$*" | shorten_paths
+}
+
+filter_short_output() {
+	awk '
+		/^==>/ { next }
+		/^ok:/ { next }
+		/^$/ { next }
+		/^FAIL:/ { print; next }
+		/^error:/ { print; next }
+		/^[Ww]arning:/ { print; next }
+		/loose (Python specifier|npm range|Cargo)/ { print; next }
+		/exact version pin/ { print; next }
+		/missing from Cargo\.lock/ { print; next }
+		/[Mm]ismatch/ { print; next }
+		/out of sync/ { print; next }
+		/missing / { print; next }
+		/check\(s\) failed/ { print; next }
+		/[Ee]rror/ { print; next }
+		/[Ww]arn(ing)?:/ { print; next }
+		/FAILED/ { print; next }
+		/npm ERR!/ { print; next }
+	'
+}
+
+emit_cmd_output() {
+	if [[ "${SHORT}" -eq 1 ]]; then
+		shorten_paths | filter_short_output >&2
+	else
+		shorten_paths >&2
+	fi
 }
 
 run_cmd() {
@@ -43,6 +82,10 @@ run_cmd() {
 	else
 		"$@"
 	fi
+}
+
+run_cmd_quiet() {
+	run_cmd "$@" >/dev/null 2>&1
 }
 
 slug() {
@@ -71,7 +114,9 @@ init_output_dir() {
 	write_summary_line "output: ${DEPS_OUTPUT_DIR}"
 	write_summary_line "started: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 	write_summary_line ""
-	info "writing reports to ${DEPS_OUTPUT_DIR}"
+	if [[ "${SHORT}" -eq 0 ]]; then
+		info "writing reports to ${DEPS_OUTPUT_DIR}"
+	fi
 }
 
 write_summary_line() {
@@ -90,7 +135,7 @@ append_manifest_lint() {
 	if [[ -n "${MANIFEST_LINT_FILE}" ]]; then
 		printf '%s\n' "${line}" >>"${MANIFEST_LINT_FILE}"
 	fi
-	echo "${line}" >&2
+	printf '%s\n' "${line}" | shorten_paths >&2
 }
 
 require_repo_root() {
@@ -117,25 +162,34 @@ read_cmake_project_version() {
 record_failure() {
 	local name="$1"
 	local detail="$2"
-	echo "FAIL: ${name}: ${detail}" >&2
+	printf 'FAIL: %s: %s\n' "${name}" "${detail}" | shorten_paths >&2
 	write_summary_line "${name}: failed (${detail})"
 	FAILURES=$((FAILURES + 1))
 }
 
 record_ok() {
 	local name="$1"
-	echo "ok: ${name}"
+	if [[ "${SHORT}" -eq 1 ]]; then
+		write_summary_line "${name}: ok"
+		return 0
+	fi
+	printf 'ok: %s\n' "${name}" | shorten_paths
 	write_summary_line "${name}: ok"
 }
 
 run_step() {
 	local name="$1"
 	shift
-	info "=== ${name} ==="
+	if [[ "${SHORT}" -eq 0 ]]; then
+		info "=== ${name} ==="
+	fi
 	if "$@"; then
 		record_ok "${name}"
 	else
 		local status=$?
+		if [[ "${SHORT}" -eq 1 ]]; then
+			info "=== ${name} ==="
+		fi
 		record_failure "${name}" "exit ${status}"
 	fi
 }
@@ -153,6 +207,10 @@ while [[ $# -gt 0 ]]; do
 		;;
 	--no-report)
 		DO_REPORT=0
+		shift
+		;;
+	--short)
+		SHORT=1
 		shift
 		;;
 	--report)
@@ -195,14 +253,15 @@ while [[ $# -gt 0 ]]; do
 Usage: verify-pins.sh [options]
 
 Verify lockfiles are in sync with manifests and (by default) flag loose direct
-dependency ranges in sdk/python/pyproject.toml, package.json files, and Cargo.toml.
+dependency ranges in sdk/python/pyproject.toml and package.json files.
+(Rust pins are enforced via Cargo.lock; Cargo.toml must use ranges, not exact pins.)
 
 Writes pinned-version inventory and check results under:
   scripts/deps/output/audit-YYYYMMDD-HHMMSS/
 
 Checked targets:
   sdk/python     uv.lock
-  Cargo.toml     Cargo.lock (workspace root; also pins sdk/c FFI deps)
+  Cargo.toml     Cargo.lock (semver ranges in manifest; exact pins in lockfile)
   sdk/c          CMakeLists.txt VERSION + synced chunk_your_skills.h
   sdk/go         go.sum
   package.json   package-lock.json (root + sdk/typescript)
@@ -211,12 +270,14 @@ Options:
   --output-dir DIR      Directory for generated reports (default: timestamped)
   --report              Write audit reports (default)
   --no-report           Skip report files; console output only
+  --short               Emit only errors, warnings, and final pass/fail; shorten paths
   --manifest-lint       Check manifests for loose semver ranges (optional)
   --no-manifest-lint    Skip manifest range checks; lockfiles only (default)
   --skip TARGET         Skip python, rust, npm, go, or c (repeatable)
 
 Examples:
   ./scripts/deps/verify-pins.sh
+  ./scripts/deps/verify-pins.sh --short
   ./scripts/deps/verify-pins.sh --no-manifest-lint
   ./scripts/deps/verify-pins.sh --output-dir /tmp/pin-audit
   ./scripts/deps/verify-pins.sh --skip go
@@ -235,14 +296,28 @@ require_repo_root
 run_checked() {
 	local out_file="$1"
 	shift
+	local tmp="" capture=0
+
 	if [[ "${DO_REPORT}" -eq 1 ]]; then
-		if "$@" >"${out_file}" 2>&1; then
+		tmp="${out_file}"
+		capture=1
+	elif [[ "${SHORT}" -eq 1 ]]; then
+		tmp="$(mktemp)"
+		capture=1
+	fi
+
+	if [[ "${capture}" -eq 1 ]]; then
+		if "$@" >"${tmp}" 2>&1; then
+			[[ "${DO_REPORT}" -eq 0 ]] && rm -f "${tmp}"
 			return 0
 		fi
-		cat "${out_file}" >&2
+		<"${tmp}" emit_cmd_output
+		[[ "${DO_REPORT}" -eq 0 ]] && rm -f "${tmp}"
 		return 1
 	fi
-	"$@"
+
+	"$@" 2>&1 | shorten_paths >&2
+	return "${PIPESTATUS[0]}"
 }
 
 require_cmd() {
@@ -268,9 +343,9 @@ report_python_inventory() {
 	info "python ${label}: export pinned versions"
 	(
 		cd "${project_dir}"
-		run_cmd uv export --frozen --all-extras --group dev \
+		run_cmd_quiet uv export --frozen --all-extras --group dev \
 			--format requirements.txt --output-file "${out_req}"
-		run_cmd uv export --frozen --all-extras --group dev \
+		run_cmd_quiet uv export --frozen --all-extras --group dev \
 			--format pylock.toml --output-file "${out_pylock}"
 	)
 	write_summary_line "python ${label}: inventory -> python-${slug_name}-requirements.txt, pylock.${slug_name}.toml"
@@ -299,6 +374,102 @@ verify_python_lock() {
 		return 0
 	fi
 	return 1
+}
+
+read_cargo_toml_dep_names() {
+	local toml="$1"
+	awk '
+		/^\[(dependencies|dev-dependencies|build-dependencies)\]/ { in_deps=1; next }
+		/^\[/ { in_deps=0; next }
+		in_deps && /^[a-zA-Z0-9_-]+[[:space:]]*=/ {
+			line=$0
+			name=$1
+			sub(/=.*/, "", name)
+			if (line ~ /path[[:space:]]*=/) next
+			if (line ~ /git[[:space:]]*=/) next
+			if (line ~ /workspace[[:space:]]*=/) next
+			print name
+		}
+	' "${toml}" | sort -u
+}
+
+cargo_lock_has_package() {
+	local lock_file="$1"
+	local dep_name="$2"
+	awk -v want="${dep_name}" '
+		/^name = / {
+			gsub(/"/, "", $3)
+			if ($3 == want) {
+				found=1
+			}
+		}
+		END { exit found ? 0 : 1 }
+	' "${lock_file}"
+}
+
+verify_cargo_manifest_lock_policy() {
+	local crate_dir="$1"
+	local label="$2"
+	local toml="${crate_dir}/Cargo.toml"
+	local lock="${crate_dir}/Cargo.lock"
+	local issues=0
+	local dep content lineno
+
+	while IFS= read -r content; do
+		lineno="${content%%:*}"
+		content="${content#*:}"
+		if [[ "${content}" =~ version[[:space:]]*=[[:space:]]*\"= ]] ||
+			[[ "${content}" =~ ^[[:space:]]*[a-zA-Z0-9_-]+[[:space:]]*=[[:space:]]*\"= ]]; then
+			printf '%s:%s: exact version pin in Cargo.toml (use semver ranges; pin in Cargo.lock)\n' \
+				"${toml}" "${lineno}"
+			issues=$((issues + 1))
+		fi
+	done < <(
+		awk '
+			/^\[(dependencies|dev-dependencies|build-dependencies)\]/ { in_deps=1; next }
+			/^\[/ { in_deps=0; next }
+			in_deps { print NR ":" $0 }
+		' "${toml}"
+	)
+
+	while IFS= read -r dep; do
+		[[ -n "${dep}" ]] || continue
+		if ! cargo_lock_has_package "${lock}" "${dep}"; then
+			printf '%s: dependency %s declared in Cargo.toml but missing from Cargo.lock\n' \
+				"${label}" "${dep}"
+			issues=$((issues + 1))
+		fi
+	done < <(read_cargo_toml_dep_names "${toml}")
+
+	if [[ "${issues}" -gt 0 ]]; then
+		return 1
+	fi
+	printf 'cargo.toml/Cargo.lock policy: all manifest deps locked; no exact pins in manifest\n'
+	return 0
+}
+
+run_rust_lock_checks() {
+	local crate_dir="$1"
+	local label="$2"
+	local failed=0
+	local meta_log
+
+	meta_log="$(mktemp)"
+	if ! run_in_dir "${crate_dir}" cargo metadata --locked --format-version 1 --quiet \
+		>"${meta_log}" 2>&1; then
+		printf 'cargo metadata --locked: failed (lockfile out of sync with Cargo.toml)\n'
+		sed -n '1,5p' "${meta_log}"
+		failed=1
+	else
+		printf 'cargo metadata --locked: ok\n'
+	fi
+	rm -f "${meta_log}"
+
+	if ! verify_cargo_manifest_lock_policy "${crate_dir}" "${label}"; then
+		failed=1
+	fi
+
+	return "${failed}"
 }
 
 report_rust_inventory() {
@@ -343,8 +514,8 @@ verify_rust_lock() {
 	out_check=""
 	[[ "${DO_REPORT}" -eq 1 ]] && out_check="$(report_path "rust-${slug_name}-lock-check.txt")"
 
-	info "rust ${label}: cargo metadata --locked"
-	if run_checked "${out_check}" run_in_dir "${crate_dir}" cargo metadata --locked --format-version 1 --quiet; then
+	info "rust ${label}: cargo lock sync and manifest policy"
+	if run_checked "${out_check}" run_rust_lock_checks "${crate_dir}" "${label}"; then
 		[[ "${DO_REPORT}" -eq 1 ]] &&
 			write_summary_line "rust ${label}: lock check -> rust-${slug_name}-lock-check.txt"
 		[[ "${DO_REPORT}" -eq 1 ]] && report_rust_inventory "${label}" "${crate_dir}"
@@ -363,7 +534,7 @@ report_go_inventory() {
 	info "go: export pinned modules"
 	(
 		cd "${mod_dir}"
-		run_cmd go list -m all | sort >"${out_mods}"
+		run_cmd go list -m all 2>/dev/null | sort >"${out_mods}"
 		cp go.sum "${out_sum}"
 	)
 	write_summary_line "go: inventory -> go-modules.txt, go-sum.txt"
@@ -472,18 +643,21 @@ verify_c_sdk() {
 			echo "header synced"
 			echo "ffi dependency lockfile: Cargo.lock (checked via rust lock step)"
 		} >"${out_check}" 2>&1; then
-			cat "${out_check}" >&2
+			<"${out_check}" emit_cmd_output
 			return 1
 		fi
 	else
 		[[ "${cargo_version}" == "${cmake_version}" ]] ||
 			{
-				echo "c sdk: version mismatch: Cargo.toml=${cargo_version} CMakeLists.txt=${cmake_version}" >&2
+				printf 'c sdk: version mismatch: Cargo.toml=%s CMakeLists.txt=%s\n' \
+					"${cargo_version}" "${cmake_version}" | emit_cmd_output
 				return 1
 			}
 		cmp -s "${header_src}" "${header_dest}" ||
 			{
-				echo "c sdk: header out of sync (run: bash sdk/c/scripts/build-c-lib.sh --sync-header)" >&2
+				printf '%s\n' \
+					"c sdk: header out of sync (run: bash sdk/c/scripts/build-c-lib.sh --sync-header)" |
+					emit_cmd_output
 				return 1
 			}
 	fi
@@ -655,41 +829,6 @@ lint_cmake_project_version() {
 	record_ok "manifest ${label}"
 }
 
-lint_cargo_toml_ranges() {
-	local label="$1"
-	local file="$2"
-	local lineno content
-	local issues=0
-
-	[[ -f "${file}" ]] || return 0
-
-	while IFS= read -r content; do
-		lineno="${content%%:*}"
-		content="${content#*:}"
-		if [[ "${content}" =~ version[[:space:]]*=[[:space:]]*\"[0-9]+\" ]]; then
-			append_manifest_lint "${file}:${lineno}: loose Cargo version (major only)"
-			issues=$((issues + 1))
-			continue
-		fi
-		if [[ "${content}" =~ ^[[:space:]]*[a-zA-Z0-9_-]+[[:space:]]*=[[:space:]]*\"[0-9]+\"[[:space:]]*$ ]]; then
-			append_manifest_lint "${file}:${lineno}: loose Cargo dependency (major only)"
-			issues=$((issues + 1))
-		fi
-	done < <(
-		awk '
-			/^\[(dependencies|dev-dependencies|build-dependencies)\]/ { in_deps=1; next }
-			/^\[/ { in_deps=0; next }
-			in_deps { print NR ":" $0 }
-		' "${file}"
-	)
-
-	if [[ "${issues}" -gt 0 ]]; then
-		record_failure "manifest ${label}" "${issues} loose Cargo constraint(s)"
-		return 1
-	fi
-	record_ok "manifest ${label}"
-}
-
 verify_manifests() {
 	local had_failure=0
 
@@ -699,8 +838,6 @@ verify_manifests() {
 	lint_package_json_ranges "package.json (root)" "${REPO_ROOT}/package.json" || had_failure=1
 	lint_package_json_ranges "package.json (sdk/typescript)" \
 		"${REPO_ROOT}/sdk/typescript/package.json" || had_failure=1
-
-	lint_cargo_toml_ranges "Cargo.toml (workspace)" "${REPO_ROOT}/Cargo.toml" || had_failure=1
 
 	lint_cmake_project_version "CMakeLists.txt (sdk/c)" \
 		"${REPO_ROOT}/sdk/c/CMakeLists.txt" || had_failure=1
@@ -712,7 +849,9 @@ verify_manifests() {
 	return "${had_failure}"
 }
 
-info "repo: ${REPO_ROOT}"
+if [[ "${SHORT}" -eq 0 ]]; then
+	info "repo: ${REPO_ROOT}"
+fi
 
 if [[ "${SKIP_PYTHON}" -eq 0 ]]; then
 	run_step "python lock (sdk/python)" verify_python_lock "sdk/python" "${REPO_ROOT}/sdk/python"
@@ -739,16 +878,24 @@ if [[ "${DO_MANIFEST_LINT}" -eq 1 ]]; then
 	run_step "manifest lint" verify_manifests
 fi
 
-echo ""
+if [[ "${SHORT}" -eq 0 ]]; then
+	echo ""
+fi
 if [[ "${DO_REPORT}" -eq 1 ]]; then
 	write_summary_line ""
 	write_summary_line "finished: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 	write_summary_line "failures: ${FAILURES}"
-	info "summary: ${DEPS_SUMMARY_FILE}"
+	if [[ "${SHORT}" -eq 0 ]]; then
+		info "summary: ${DEPS_SUMMARY_FILE}"
+	fi
 fi
 
 if [[ "${FAILURES}" -gt 0 ]]; then
 	die "${FAILURES} check(s) failed"
 fi
 
-info "all pin checks passed"
+if [[ "${SHORT}" -eq 1 ]]; then
+	printf 'all pin checks passed\n'
+else
+	info "all pin checks passed"
+fi
