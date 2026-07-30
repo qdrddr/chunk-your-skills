@@ -54,7 +54,7 @@ while [[ $# -gt 0 ]]; do
 		cat <<'EOF'
 Usage: audit-npm.sh [--output-dir DIR] [--check] [--no-check] [--report] [--no-report] [--with-dev]
 
-Runs license-checker for each npm project with a lockfile. Policy allow-list matches deny.toml.
+Runs license-checker for each npm project with a lockfile. Policy allow-list comes from legal/policy.toml.
 EOF
 		exit 0
 		;;
@@ -106,12 +106,15 @@ legal_audit_npm_project() {
 		legal_info "npm ${rel_dir}: license-checker report"
 		(
 			cd "${project_dir}"
-			legal_run npx --yes license-checker "${checker_args[@]}" \
+			# Do not wrap npx with rtk — stderr noise corrupts JSON output files.
+			npx --yes license-checker "${checker_args[@]}" \
+				2>/dev/null \
 				>"${LEGAL_OUTPUT_DIR}/npm-${slug}.json"
 		)
 		(
 			cd "${project_dir}"
-			legal_run npx --yes license-checker --summary "${checker_args[@]}" \
+			npx --yes license-checker --summary "${checker_args[@]}" \
+				2>/dev/null \
 				>"${LEGAL_OUTPUT_DIR}/npm-${slug}-summary.txt"
 		)
 		legal_write_summary_line "npm ${rel_dir}: license-checker -> npm-${slug}.{json,summary.txt}"

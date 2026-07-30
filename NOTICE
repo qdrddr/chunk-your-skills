@@ -22,3 +22,25 @@ MPL obligations apply only if you modify and distribute cbindgen itself; using t
 generated header or linked binary does not extend MPL to this project.
 
 - https://github.com/mozilla/cbindgen/blob/main/LICENSE
+
+---
+
+typescript (dev dependency, sdk/typescript and @napi-rs/cli)
+Copyright (c) Microsoft Corporation. Licensed under the Apache License, Version 2.0.
+
+- https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt
+- https://github.com/microsoft/TypeScript/blob/main/NOTICE.txt
+
+---
+
+js-yaml (dev dependency, via @napi-rs/cli)
+Copyright (C) 2011-2015 by Vitaly Puzrin. Licensed under the MIT License.
+
+- https://github.com/nodeca/js-yaml/blob/master/LICENSE
+
+---
+
+argparse (dev dependency, via js-yaml)
+Licensed under the Python License 2.0.
+
+- https://github.com/nodeca/argparse/blob/master/LICENSE

@@ -1,6 +1,6 @@
 {
   "name": "chunk-your-skills",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "TypeScript SDK for chunk-your-skills — SKILL.md pageindex and skinny-skill recomposition",
   "keywords": [
     "skills",
@@ -38,9 +38,12 @@
     "build:native": "napi build --platform --release --manifest-path ../../Cargo.toml -p chunk-your-skills --features node --no-default-features --output-dir . --js native.cjs --dts native.d.ts",
     "test": "npm run build:js && node --test dist/test/*.test.js"
   },
+  "overrides": {
+    "js-yaml": "4.3.0"
+  },
   "devDependencies": {
-    "@napi-rs/cli": "^3.7.0",
-    "@types/node": "^22.15.21",
+    "@napi-rs/cli": "3.8.1",
+    "@types/node": "^26.1.2",
     "typescript": "^5.8.3"
   },
   "engines": {

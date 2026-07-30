@@ -11,6 +11,7 @@ if [[ -z "${LEGAL_LIB_SOURCED:-}" ]]; then
 		local dir="$1"
 		[[ -f "${dir}/Cargo.toml" ]] || return 1
 		[[ -f "${dir}/deny.toml" ]] || return 1
+		[[ -f "${dir}/legal/policy.toml" ]] || return 1
 		[[ -f "${dir}/sdk/python/pyproject.toml" ]] || return 1
 	}
 
@@ -49,18 +50,17 @@ if [[ -z "${LEGAL_LIB_SOURCED:-}" ]]; then
 		LEGAL_REPO_ROOT="$(cd "${LEGAL_SCRIPT_DIR}/../.." && pwd)"
 	fi
 
-	# Mirrors deny.toml [licenses].allow (semicolon-separated for license-checker).
-	LEGAL_ALLOWED_LICENSES="MIT;Apache-2.0;Apache-2.0 WITH LLVM-exception;BSD-2-Clause;BSD-3-Clause;0BSD;ISC;MPL-2.0;Unicode-3.0;Unlicense;Zlib"
+	legal_policy_py() {
+		printf '%s/lib/policy.py' "${LEGAL_SCRIPT_DIR}"
+	}
 
 	legal_allowed_licenses_csv() {
-		printf '%s' "${LEGAL_ALLOWED_LICENSES}"
+		python3 "$(legal_policy_py)" allowed-csv
 	}
 
 	legal_license_allowed() {
-		case ";${LEGAL_ALLOWED_LICENSES};" in
-		*";$1;"*) return 0 ;;
-		*) return 1 ;;
-		esac
+		local license="$1"
+		python3 "$(legal_policy_py)" allowed "${license}"
 	}
 
 	legal_die() {
@@ -174,7 +174,7 @@ if [[ -z "${LEGAL_LIB_SOURCED:-}" ]]; then
 			fi
 		fi
 		legal_is_repo_root "${LEGAL_REPO_ROOT}" ||
-			legal_die "not a chunk-your-skills repo root: ${LEGAL_REPO_ROOT} (expected Cargo.toml, deny.toml, and sdk/python/pyproject.toml)"
+			legal_die "not a chunk-your-skills repo root: ${LEGAL_REPO_ROOT} (expected Cargo.toml, deny.toml, legal/policy.toml, and sdk/python/pyproject.toml)"
 	}
 
 	legal_write_summary_line() {

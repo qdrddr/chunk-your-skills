@@ -1,4 +1,5 @@
 # Workspace cargo-deny policy (Apache-2.0 chunk-your-skills + common Rust deps).
+# [licenses].allow is synced from legal/policy.toml — run ./scripts/legal/sync-policy.sh
 
 [advisories]
 version = 2
@@ -18,6 +19,7 @@ allow = [
     "0BSD",
     "ISC",
     "MPL-2.0",
+    "Python-2.0",
     "Unicode-3.0",
     "Unlicense",
     "Zlib",

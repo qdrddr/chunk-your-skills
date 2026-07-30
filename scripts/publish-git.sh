@@ -59,6 +59,7 @@ version_files() {
 ${ROOT}/Cargo.toml
 ${ROOT}/Cargo.lock
 ${ROOT}/sdk/python/pyproject.toml
+${ROOT}/sdk/python/uv.lock
 ${ROOT}/sdk/typescript/package.json
 ${ROOT}/sdk/typescript/package-lock.json
 ${ROOT}/sdk/c/CMakeLists.txt

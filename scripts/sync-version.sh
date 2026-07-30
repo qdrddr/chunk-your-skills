@@ -16,6 +16,7 @@ export SHORTEN_ROOT="${ROOT}"
 CARGO_TOML="${ROOT}/Cargo.toml"
 CARGO_LOCK="${ROOT}/Cargo.lock"
 SDK_PYPROJECT="${ROOT}/sdk/python/pyproject.toml"
+SDK_UV_LOCK="${ROOT}/sdk/python/uv.lock"
 PACKAGE_JSON="${ROOT}/sdk/typescript/package.json"
 PACKAGE_LOCK="${ROOT}/sdk/typescript/package-lock.json"
 C_CMAKE="${ROOT}/sdk/c/CMakeLists.txt"
@@ -30,6 +31,7 @@ Propagate VERSION to all manifests and lockfiles:
   - Cargo.toml (root crate)
   - Cargo.lock (chunk-your-skills)
   - sdk/python/pyproject.toml
+  - sdk/python/uv.lock
   - sdk/typescript/package.json
   - sdk/typescript/package-lock.json
   - sdk/c/CMakeLists.txt (project VERSION)
@@ -149,6 +151,22 @@ update_go_module_version() {
 	mv "${tmp}" "${GO_VERSION}"
 }
 
+update_uv_lock_version() {
+	local version="$1"
+	local tmp
+	tmp="$(mktemp)"
+	awk -v version="${version}" '
+    /^name = "chunk-your-skills"$/ { found=1 }
+    found && /^version = / {
+      print "version = \"" version "\""
+      found=0
+      next
+    }
+    { print }
+  ' "${SDK_UV_LOCK}" >"${tmp}"
+	mv "${tmp}" "${SDK_UV_LOCK}"
+}
+
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 	usage
 	exit 0
@@ -175,6 +193,7 @@ for file in \
 	"${CARGO_TOML}" \
 	"${CARGO_LOCK}" \
 	"${SDK_PYPROJECT}" \
+	"${SDK_UV_LOCK}" \
 	"${PACKAGE_JSON}" \
 	"${PACKAGE_LOCK}" \
 	"${C_CMAKE}" \
@@ -190,6 +209,7 @@ tag="v${version}"
 update_toml_version "${CARGO_TOML}" "${version}"
 update_cargo_lock_version "${version}"
 update_toml_version "${SDK_PYPROJECT}" "${version}"
+update_uv_lock_version "${version}"
 update_package_json_version "${version}"
 update_package_lock_version "${version}"
 update_cmake_project_version "${version}"
@@ -201,6 +221,7 @@ synced version ${version} to:
   ${CARGO_TOML}
   ${CARGO_LOCK} (chunk-your-skills)
   ${SDK_PYPROJECT}
+  ${SDK_UV_LOCK} (chunk-your-skills)
   ${PACKAGE_JSON}
   ${PACKAGE_LOCK}
   ${C_CMAKE} (project VERSION)
