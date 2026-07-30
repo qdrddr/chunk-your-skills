@@ -33,6 +33,8 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
+[workspace]
+
 [dependencies]
 chunk-your-skills = { path = "../../.." }
 serde_json = "1"

@@ -4,6 +4,8 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
+[workspace]
+
 [dependencies]
 chunk-your-skills = { version = "=@CHUNK_YOUR_SKILLS_RELEASE_VERSION@" }
 serde_json = "1"
