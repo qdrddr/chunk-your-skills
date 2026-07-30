@@ -131,7 +131,7 @@ repos:
     rev: v3.92.3
     hooks:
       - id: trufflehog
-        args: ["--only-verified"]
+        args: ["--only-verified", "--trust-local-git-config"]
 
   - repo: https://github.com/thoughtworks/talisman
     rev: v1.37.0
@@ -185,6 +185,14 @@ repos:
         files: ^sdk/c/.*\.(c|h)$
         exclude: ^sdk/c/include/chunk_your_skills\.h$
         args: ["--suppress=missingIncludeSystem", "--error-exitcode=1"]
+      - id: cmake-compile-db
+        name: Generate sdk/c compile_commands.json
+        entry: bash scripts/prek-hook.sh
+        args:
+          - cmake -S sdk/c -B sdk/c/build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+        language: system
+        files: ^sdk/c/
+        pass_filenames: false
       - id: clang-tidy
         name: clang-tidy (sdk/c)
         entry: bash scripts/c-sdk-precommit.sh clang-tidy
@@ -516,15 +524,6 @@ repos:
           - rtk cargo test -p chunk-your-skills --no-default-features --features ffi --test ffi_smoke
         language: system
         files: ^(src/ffi/|tests/ffi_smoke\.rs|chunk_your_skills\.h)
-        pass_filenames: false
-
-      - id: cmake-compile-db
-        name: Generate sdk/c compile_commands.json
-        entry: bash scripts/prek-hook.sh
-        args:
-          - cmake -S sdk/c -B sdk/c/build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
-        language: system
-        files: ^sdk/c/
         pass_filenames: false
 
       - id: build-c-lib-for-go

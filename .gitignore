@@ -148,3 +148,4 @@ graphify-out/cache/
 .git_old
 .gitnexus/
 .cursor/rules/cyt-injection.mdc
+scripts/legal/output/
