@@ -2,16 +2,16 @@
 # Propagate a single semver to all package manifests and lockfiles.
 #
 # Usage:
-#   ./scripts/sync-version.sh [VERSION]
+#   ./scripts/publish/sync-version.sh [VERSION]
 #
 # If VERSION is omitted, read it from root Cargo.toml.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 # shellcheck disable=SC1091
-source "${SCRIPT_DIR}/shorten-paths.sh"
+source "${SCRIPT_DIR}/../lib/shorten-paths.sh"
 export SHORTEN_ROOT="${ROOT}"
 CARGO_TOML="${ROOT}/Cargo.toml"
 CARGO_LOCK="${ROOT}/Cargo.lock"
@@ -55,6 +55,16 @@ validate_version() {
 	fi
 }
 
+replace_file_if_changed() {
+	local tmp="$1"
+	local file="$2"
+	if cmp -s "${tmp}" "${file}"; then
+		rm -f "${tmp}"
+		return 1
+	fi
+	mv "${tmp}" "${file}"
+}
+
 update_toml_version() {
 	local file="$1"
 	local version="$2"
@@ -68,7 +78,7 @@ update_toml_version() {
     }
     { print }
   ' "${file}" >"${tmp}"
-	mv "${tmp}" "${file}"
+	replace_file_if_changed "${tmp}" "${file}" || true
 }
 
 update_cargo_lock_version() {
@@ -76,7 +86,9 @@ update_cargo_lock_version() {
 	local tmp
 	tmp="$(mktemp)"
 	awk -v version="${version}" '
-    /^name = "chunk-your-skills"$/ { found=1 }
+    /^\[\[package\]\]/ { in_package=1 }
+    /^\[\[/ && $0 !~ /^\[\[package\]\]/ { in_package=0 }
+    in_package && /^name = "chunk-your-skills"$/ { found=1 }
     found && /^version = / {
       print "version = \"" version "\""
       found=0
@@ -84,7 +96,7 @@ update_cargo_lock_version() {
     }
     { print }
   ' "${CARGO_LOCK}" >"${tmp}"
-	mv "${tmp}" "${CARGO_LOCK}"
+	replace_file_if_changed "${tmp}" "${CARGO_LOCK}" || true
 }
 
 update_package_json_version() {
@@ -99,7 +111,7 @@ update_package_json_version() {
     }
     { print }
   ' "${PACKAGE_JSON}" >"${tmp}"
-	mv "${tmp}" "${PACKAGE_JSON}"
+	replace_file_if_changed "${tmp}" "${PACKAGE_JSON}" || true
 }
 
 update_package_lock_version() {
@@ -120,7 +132,7 @@ update_package_lock_version() {
     }
     { print }
   ' "${PACKAGE_LOCK}" >"${tmp}"
-	mv "${tmp}" "${PACKAGE_LOCK}"
+	replace_file_if_changed "${tmp}" "${PACKAGE_LOCK}" || true
 }
 
 update_cmake_project_version() {
@@ -134,7 +146,7 @@ update_cmake_project_version() {
     }
     { print }
   ' "${C_CMAKE}" >"${tmp}"
-	mv "${tmp}" "${C_CMAKE}"
+	replace_file_if_changed "${tmp}" "${C_CMAKE}" || true
 }
 
 update_go_module_version() {
@@ -148,7 +160,7 @@ update_go_module_version() {
     }
     { print }
   ' "${GO_VERSION}" >"${tmp}"
-	mv "${tmp}" "${GO_VERSION}"
+	replace_file_if_changed "${tmp}" "${GO_VERSION}" || true
 }
 
 update_uv_lock_version() {
@@ -164,7 +176,7 @@ update_uv_lock_version() {
     }
     { print }
   ' "${SDK_UV_LOCK}" >"${tmp}"
-	mv "${tmp}" "${SDK_UV_LOCK}"
+	replace_file_if_changed "${tmp}" "${SDK_UV_LOCK}" || true
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then

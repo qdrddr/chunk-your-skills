@@ -1,0 +1,4 @@
+# Override inherited [patch.crates-io] from the clear-your-tools monorepo parent
+# (../.cargo/config.toml). Parent patches are unused in this crate and cause
+# [[patch.unused]] churn in Cargo.lock on every cargo/maturin invocation.
+[patch.crates-io]

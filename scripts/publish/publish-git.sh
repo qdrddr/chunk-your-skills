@@ -2,16 +2,16 @@
 # Bump version manifests, commit, push, tag, and create a GitHub Release.
 #
 # Usage:
-#   ./scripts/publish-git.sh v1.0.8
-#   ./scripts/publish-git.sh bump-patch
-#   ./scripts/publish-git.sh bump-minor
+#   ./scripts/publish/publish-git.sh v1.0.8
+#   ./scripts/publish/publish-git.sh bump-patch
+#   ./scripts/publish/publish-git.sh bump-minor
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 # shellcheck disable=SC1091
-source "${SCRIPT_DIR}/shorten-paths.sh"
+source "${SCRIPT_DIR}/../lib/shorten-paths.sh"
 export SHORTEN_ROOT="${ROOT}"
 
 usage() {
@@ -30,7 +30,7 @@ Auto-bump (bump-patch / bump-minor):
   - bump-minor: increment MINOR and reset PATCH to 0, e.g. v1.0.7 -> v1.1.0
 
 Steps:
-  1. Run scripts/sync-version.sh with the semver (without the leading v)
+  1. Run scripts/publish/sync-version.sh with the semver (without the leading v)
   2. Commit only the version manifest files
   3. Push the current branch
   4. Force-create the git tag and push it

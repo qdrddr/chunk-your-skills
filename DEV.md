@@ -13,7 +13,7 @@ sdk/go/                       # Go module (chunkyourskills, cgo)
 sdk/c/                        # C FFI + CMake (libchunk_your_skills)
 sdk/e2e/                      # Published-package smoke tests
 examples/                     # decompose/recompose demos (context7 skill)
-scripts/                      # local-dev, sync-version, publish helpers
+scripts/                      # local/dev, publish, pre-commit-hooks, legal, deps
 ```
 
 ## Prerequisites
@@ -25,7 +25,7 @@ scripts/                      # local-dev, sync-version, publish helpers
 - **CMake**, **make** (or **gmake**), **ctest** — C SDK (`sdk/c`)
 
 Optional: **prek** / **pre-commit** for local hooks (see `.pre-commit-config.yaml`). The
-`check-no-legacy-prefix` hook runs `./scripts/check_no_legacy_prefix.sh` to block legacy naming
+`check-no-legacy-prefix` hook runs `./scripts/pre-commit-hooks/check_no_legacy_prefix.sh` to block legacy naming
 regressions.
 
 If you use a local Cursor rules file named for the old prefix, rename it to
@@ -35,28 +35,28 @@ If you use a local Cursor rules file named for the old prefix, rename it to
 
 ```bash
 # Full check (Rust + all SDKs)
-./scripts/local-dev.sh all
+./scripts/local/dev/workflow.sh all
 
 # Rust only (unit tests + FFI smoke)
-./scripts/local-dev.sh core-rust
+./scripts/local/dev/workflow.sh core-rust
 cargo test -p chunk-your-skills --all-features
 
 # Python SDK (editable install + verify + pytest)
-./scripts/local-dev.sh sdk-python
+./scripts/local/dev/workflow.sh sdk-python
 cd sdk/python && uv run pytest
 
 # TypeScript SDK (npm ci, build, test)
-./scripts/local-dev.sh sdk-typescript
+./scripts/local/dev/workflow.sh sdk-typescript
 
 # C + Go (builds FFI first)
-./scripts/local-dev.sh sdk-c
-./scripts/local-dev.sh sdk-go
+./scripts/local/dev/workflow.sh sdk-c
+./scripts/local/dev/workflow.sh sdk-go
 
 # CI-equivalent smoke (Rust + Python build/verify/pytest)
-./scripts/local-dev.sh ci
+./scripts/local/dev/workflow.sh ci
 
 # Quieter output
-./scripts/local-dev.sh --silent all
+./scripts/local/dev/workflow.sh --silent all
 ```
 
 ## CLI examples
@@ -69,8 +69,8 @@ skinny-skill output paths.
 Version source of truth: root `Cargo.toml`.
 
 ```bash
-./scripts/sync-version.sh          # read version from Cargo.toml
-./scripts/sync-version.sh 1.0.10   # set and propagate to all manifests
+./scripts/publish/sync-version.sh          # read version from Cargo.toml
+./scripts/publish/sync-version.sh 1.0.10   # set and propagate to all manifests
 ```
 
 Propagates to `Cargo.lock`, `sdk/python/pyproject.toml`, `sdk/typescript/package.json`,
@@ -92,10 +92,10 @@ Tag `vX.Y.Z` triggers GitHub workflows:
 Manual release helper:
 
 ```bash
-./scripts/publish-git.sh bump-patch   # or bump-minor, or v1.0.10
+./scripts/publish/publish-git.sh bump-patch   # or bump-minor, or v1.0.10
 ```
 
-Individual registry scripts (when needed): `scripts/publish-crates.sh`, `publish-pypi.sh`,
+Individual registry scripts (when needed): `scripts/publish/publish-crates.sh`, `publish-pypi.sh`,
 `publish-npm.sh`.
 
 ## Published-package E2E (local)

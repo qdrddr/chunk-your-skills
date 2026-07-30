@@ -7,7 +7,7 @@ License: Apache-2.0
 You must include the license notice in all copies or substantial uses of the work.
 
 Component | Version | Dependency path
-chunk-your-skills | 2.0.6 | chunk-your-skills (Apache-2.0; see LICENSE)
+chunk-your-skills | 2.0.8 | chunk-your-skills (Apache-2.0; see LICENSE)
 typescript | 5.9.3 | sdk/typescript devDependency
 typescript | 6.0.3 | @napi-rs/cli -> typescript
 typescript | 6.0.3 | repo root dependency

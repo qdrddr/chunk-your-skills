@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Check legacy naming
-        run: ./scripts/check_no_legacy_prefix.sh
+        run: ./scripts/pre-commit-hooks/check_no_legacy_prefix.sh
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

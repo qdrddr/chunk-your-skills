@@ -6,7 +6,7 @@ that NOTICE when you distribute. You may append to this NOTICE file.
 License: Apache-2.0
 
 Component | Version | Dependency path
-chunk-your-skills | 2.0.6 | chunk-your-skills (see ../NOTICE)
+chunk-your-skills | 2.0.8 | chunk-your-skills (see ../NOTICE)
 typescript | 5.9.3 | sdk/typescript devDependency
 typescript | 6.0.3 | @napi-rs/cli -> typescript
 typescript | 6.0.3 | repo root dependency

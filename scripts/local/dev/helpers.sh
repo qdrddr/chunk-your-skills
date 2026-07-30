@@ -6,7 +6,7 @@
 if [[ -z "${CYS_LOCAL_DEV_LIB_SOURCED:-}" ]]; then
 	CYS_LOCAL_DEV_LIB_SOURCED=1
 
-	CYS_REPO_ROOT="${CYS_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+	CYS_REPO_ROOT="${CYS_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
 	export CYS_REPO_ROOT
 
 	die() {
@@ -163,7 +163,7 @@ sdk_root = (root / "sdk" / "python").resolve()
 try:
     dist = metadata.distribution("chunk-your-skills")
 except metadata.PackageNotFoundError:
-    sys.exit("chunk-your-skills is not installed; run: ./scripts/local-dev.sh sdk-python")
+    sys.exit("chunk-your-skills is not installed; run: ./scripts/local/dev/workflow.sh sdk-python")
 
 install_kind = "editable"
 try:
@@ -182,7 +182,7 @@ except FileNotFoundError:
             "chunk-your-skills is not loaded from sdk/python\n"
             f"  package file: {pkg_dir}\n"
             f"  expected under: {sdk_root}\n"
-            "Run ./scripts/local-dev.sh sdk-python"
+            "Run ./scripts/local/dev/workflow.sh sdk-python"
         )
     install_kind = "path"
 

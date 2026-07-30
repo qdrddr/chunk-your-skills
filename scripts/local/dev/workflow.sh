@@ -2,7 +2,7 @@
 # Local monorepo workflow: Rust core → SDK artifacts (no app layer).
 #
 # Usage:
-#   ./scripts/local-dev.sh [--short|--silent] <command> [args...]
+#   ./scripts/local/dev/workflow.sh [--short|--silent] <command> [args...]
 #
 # Commands:
 #   core-rust | rust     cargo test -p chunk-your-skills (+ ffi smoke)
@@ -16,16 +16,16 @@
 #   all                  core-rust → all SDKs
 #
 # Examples:
-#   ./scripts/local-dev.sh all
-#   ./scripts/local-dev.sh --silent sdk-go
+#   ./scripts/local/dev/workflow.sh all
+#   ./scripts/local/dev/workflow.sh --silent sdk-go
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # shellcheck disable=SC1091
-source "${SCRIPT_DIR}/local-dev-lib.sh"
+source "${SCRIPT_DIR}/helpers.sh"
 # shellcheck disable=SC1091
-source "${SCRIPT_DIR}/shorten-paths.sh"
+source "${SCRIPT_DIR}/../../lib/shorten-paths.sh"
 export SHORTEN_ROOT="${CYS_REPO_ROOT}"
 
 CYS_LOCAL_DEV_SHORT="${CYS_LOCAL_DEV_SHORT:-}"

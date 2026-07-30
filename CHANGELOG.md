@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to **chunk-your-skills** are documented here. Version numbers follow the root
-`Cargo.toml` and are synced to Python, npm, Go, and C manifests via `scripts/sync-version.sh`.
+`Cargo.toml` and are synced to Python, npm, Go, and C manifests via `scripts/publish/sync-version.sh`.
 
 ---
 
@@ -12,7 +12,7 @@ Breaking rename to remove legacy three-letter prefixes that collided with other 
 - C FFI exports use `chunk_your_skills_*` functions and `CHUNK_YOUR_SKILLS_*` constants.
 - Public env vars use `CHUNK_YOUR_SKILLS_*` (for example `CHUNK_YOUR_SKILLS_RELEASE_VERSION`, `CHUNK_YOUR_SKILLS_CACHE_*`).
 - Internal dev tooling keeps `CYS_*` where already established (CMake `CYS::chunk_your_skills`).
-- Added `scripts/check_no_legacy_prefix.sh` and a pre-commit hook to prevent regressions.
+- Added `scripts/pre-commit-hooks/check_no_legacy_prefix.sh` and a pre-commit hook to prevent regressions.
 
 ## 1.0.9
 
@@ -23,7 +23,7 @@ Breaking rename to remove legacy three-letter prefixes that collided with other 
 ## 1.0.8
 
 - Removed token counting from all SDKs and FFI (C, Python, TypeScript, Go).
-- Added `scripts/publish-git.sh` release helper.
+- Added `scripts/publish/publish-git.sh` release helper.
 - Updated example decomposed node files and E2E fixtures accordingly.
 
 ## 1.0.7
