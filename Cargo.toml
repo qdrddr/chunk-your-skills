@@ -11,6 +11,9 @@ keywords = ["skills", "markdown", "pageindex", "agents"]
 categories = ["command-line-utilities", "development-tools"]
 exclude = ["assets/"]
 
+[package.metadata.authors]
+main = { name = "Damien Berezenko", linkedin = "https://www.linkedin.com/in/damien-e" }
+
 [workspace]
 
 [lib]
