@@ -61,6 +61,59 @@ version_files() {
 	version_manifest_paths "${ROOT}"
 }
 
+read_head_crate_version() {
+	git show HEAD:Cargo.toml |
+		grep -E '^version[[:space:]]*=' |
+		head -1 |
+		sed -E 's/^version[[:space:]]*=[[:space:]]*"(.*)".*/\1/'
+}
+
+stage_version_files() {
+	local file publish_tag
+	publish_tag="$(version_manifest_publish_tag "${ROOT}")"
+
+	for file in "${files[@]}"; do
+		if [[ "${file}" == "${publish_tag}" ]]; then
+			# Tracked for publish CI but listed in .gitignore; plain git add skips it.
+			git add -f -- "${file}"
+		else
+			git add -- "${file}"
+		fi
+	done
+}
+
+assert_version_files_staged() {
+	local file
+
+	for file in "${files[@]}"; do
+		if ! git diff --quiet -- "${file}"; then
+			printf 'error: %s still has unstaged changes after staging version manifests\n' "${file}" | shorten_paths >&2
+			exit 1
+		fi
+	done
+}
+
+assert_version_files_committed() {
+	local file head_version
+
+	for file in "${files[@]}"; do
+		if ! git diff --quiet HEAD -- "${file}"; then
+			printf 'error: %s was not committed\n' "${file}" | shorten_paths >&2
+			exit 1
+		fi
+		if ! git diff --cached --quiet -- "${file}"; then
+			printf 'error: %s is still staged but was not committed\n' "${file}" | shorten_paths >&2
+			exit 1
+		fi
+	done
+
+	head_version="$(read_head_crate_version)"
+	if [[ "${head_version}" != "${semver}" ]]; then
+		echo "error: HEAD Cargo.toml is ${head_version} but publish target is ${semver}" >&2
+		exit 1
+	fi
+}
+
 semver_tag_pattern='^v[0-9]+\.[0-9]+\.[0-9]+$'
 
 collect_version_tags() {
@@ -180,11 +233,20 @@ mapfile -t files < <(version_files)
 
 "${SCRIPT_DIR}/sync-version.sh" "${semver}"
 
-git add -- "${files[@]}"
+stage_version_files
+assert_version_files_staged
 if git diff --cached --quiet; then
+	head_version="$(read_head_crate_version)"
+	if [[ "${head_version}" != "${semver}" ]]; then
+		echo "error: version manifests are not staged at ${semver} (HEAD is ${head_version})" >&2
+		exit 1
+	fi
 	echo "version manifests already at ${semver}; skipping commit"
 else
-	git commit -m "version bump to ${tag}"
+	# sync-version already ran above; skip the hook so commit does not re-run it
+	# and abort while the index is locked.
+	SKIP=sync-version git commit -m "version bump to ${tag}"
+	assert_version_files_committed
 fi
 
 git push origin HEAD

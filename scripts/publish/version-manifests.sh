@@ -29,3 +29,8 @@ version_manifest_relative_labels() {
   - search/.publish-tag (tag=vX.Y.Z)
 EOF
 }
+
+version_manifest_publish_tag() {
+	local root="$1"
+	printf '%s\n' "${root}/search/.publish-tag"
+}
