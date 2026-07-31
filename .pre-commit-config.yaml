@@ -104,7 +104,7 @@ repos:
     hooks:
       - id: codespell # See typos.toml for allowed words
         args: ["-L", "fallow,Fallow,Bui"]
-        exclude: ^(package-lock\.json|sdk/typescript/package-lock\.json)$
+        exclude: ^(package-lock\.json|sdk/typescript/package-lock\.json|sdk/go/go\.sum)$
   - repo: https://github.com/crate-ci/committed
     rev: v1.1.11
     hooks:

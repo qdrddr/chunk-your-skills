@@ -7,4 +7,5 @@ import (
 	_ "github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream"
 	_ "github.com/golang-jwt/jwt/v5"
 	_ "github.com/modelcontextprotocol/go-sdk/mcp"
+	_ "github.com/yuin/goldmark"
 )

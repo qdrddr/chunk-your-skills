@@ -6,7 +6,6 @@ import {
   extractSnapshotParts,
   loadSnapshot,
   parseTestArgs,
-  resolveSnapshotPath,
   writeOutput,
 } from "./example-snapshot.mjs";
 
@@ -23,8 +22,7 @@ test(
     if (!exampleFile) {
       return;
     }
-    const snapshotPath = resolveSnapshotPath(exampleFile);
-    const markdown = loadSnapshot(snapshotPath);
+    const markdown = loadSnapshot(exampleFile);
     extractSnapshotParts(markdown);
 
     const catalog = catalogDictFromSnapshot(markdown);

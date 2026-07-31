@@ -1,15 +1,21 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { relative, resolve } from "node:path";
+import { resolve, sep } from "node:path";
 
 import { mdToTree } from "chunk-your-skills";
 
+const SAFE_PATH = /^[\w.\-+]+(?:\/[\w.\-+]+)*$/;
+
 /** @param {string} file @param {string} label */
 function resolveWithinCwd(file, label) {
-  const resolved = resolve(file);
-  const cwd = process.cwd();
-  const rel = relative(cwd, resolved);
-  if (rel.startsWith("..")) {
-    throw new Error(`${label} must stay within ${cwd}: ${resolved}`);
+  if (!file || file.includes("\0") || !SAFE_PATH.test(file)) {
+    throw new Error(
+      `${label} must be a simple relative path under the current directory`,
+    );
+  }
+  const base = resolve(process.cwd());
+  const resolved = resolve(base, file);
+  if (resolved !== base && !resolved.startsWith(`${base}${sep}`)) {
+    throw new Error(`${label} must stay within ${base}: ${resolved}`);
   }
   return resolved;
 }
@@ -26,13 +32,9 @@ export function parseTestArgs() {
 }
 
 /** @param {string} file */
-export function resolveSnapshotPath(file) {
-  return resolveWithinCwd(file, "--file");
-}
-
-/** @param {string} path */
-export function loadSnapshot(path) {
-  return readFileSync(path, "utf8");
+export function loadSnapshot(file) {
+  const safePath = resolveWithinCwd(file, "--file");
+  return readFileSync(safePath, "utf8");
 }
 
 /** @param {string} markdown */
