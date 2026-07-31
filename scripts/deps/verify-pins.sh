@@ -535,9 +535,31 @@ report_go_inventory() {
 	(
 		cd "${mod_dir}"
 		run_cmd go list -m all 2>/dev/null | sort >"${out_mods}"
-		cp go.sum "${out_sum}"
+		if [[ -f go.sum ]]; then
+			cp go.sum "${out_sum}"
+		else
+			: >"${out_sum}"
+		fi
 	)
 	write_summary_line "go: inventory -> go-modules.txt, go-sum.txt"
+}
+
+verify_go_module_lock() {
+	local label="$1"
+	local mod_dir="$2"
+	local out_check="$3"
+	local module_count
+
+	[[ -f "${mod_dir}/go.mod" ]] ||
+		die "go ${label}: missing go.mod"
+
+	module_count="$(run_in_dir "${mod_dir}" go list -m all 2>/dev/null | wc -l | tr -d '[:space:]')"
+	if [[ "${module_count:-0}" -gt 1 && ! -f "${mod_dir}/go.sum" ]]; then
+		die "go ${label}: missing go.sum (run: go mod tidy in ${mod_dir#"${REPO_ROOT}"/})"
+	fi
+
+	info "go ${label}: go mod verify"
+	run_checked "${out_check}" run_in_dir "${mod_dir}" go mod verify
 }
 
 verify_go_lock() {
@@ -545,22 +567,19 @@ verify_go_lock() {
 	local out_check
 
 	require_cmd go
-	[[ -f "${mod_dir}/go.mod" ]] ||
-		die "go: missing go.mod"
-	[[ -f "${mod_dir}/go.sum" ]] ||
-		die "go: missing go.sum (run: go mod tidy in sdk/go)"
+	mod_dir="${REPO_ROOT}/sdk/go"
 
 	out_check=""
 	[[ "${DO_REPORT}" -eq 1 ]] && out_check="$(report_path "go-lock-check.txt")"
 
-	info "go: go mod verify"
-	if run_checked "${out_check}" run_in_dir "${mod_dir}" go mod verify; then
-		[[ "${DO_REPORT}" -eq 1 ]] &&
-			write_summary_line "go: lock check -> go-lock-check.txt"
-		[[ "${DO_REPORT}" -eq 1 ]] && report_go_inventory
-		return 0
+	if ! verify_go_module_lock "sdk/go" "${mod_dir}" "${out_check}"; then
+		return 1
 	fi
-	return 1
+	[[ "${DO_REPORT}" -eq 1 ]] &&
+		write_summary_line "go: lock check -> go-lock-check.txt"
+	[[ "${DO_REPORT}" -eq 1 ]] && report_go_inventory
+
+	return 0
 }
 
 report_c_inventory() {

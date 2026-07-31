@@ -40,6 +40,7 @@ src/nogo_
 # Build outputs
 /target/
 sdk/c/build/
+sdk/go/.dev-bin/
 *.pdf.bak
 paper.tex.bak
 

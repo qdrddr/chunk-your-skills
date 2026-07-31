@@ -48,14 +48,16 @@ groups:
     - verify-sdk
 
   go:
-    - build-c-lib-for-go
-    - go-build-repo-mod
-    - go-critic
+    # Formatters and module hygiene first, then linters, then build/test.
     - go-fumpt
     - go-imports
     - go-mod-tidy-repo
-    - go-sec-repo-mod
+    - go-vet-repo-mod
     - go-staticcheck-repo-mod
+    - go-critic
+    - go-sec-repo-mod
+    - build-c-lib-for-go
+    - go-build-repo-mod
     - go-test-repo-mod
     - local-dev-sdk-go
 

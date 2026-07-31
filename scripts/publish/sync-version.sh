@@ -12,6 +12,8 @@ ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../lib/shorten-paths.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/version-manifests.sh"
 export SHORTEN_ROOT="${ROOT}"
 CARGO_TOML="${ROOT}/Cargo.toml"
 CARGO_LOCK="${ROOT}/Cargo.lock"
@@ -28,14 +30,7 @@ usage() {
 Usage: $(basename "$0") [VERSION]
 
 Propagate VERSION to all manifests and lockfiles:
-  - Cargo.toml (root crate)
-  - Cargo.lock (chunk-your-skills)
-  - sdk/python/pyproject.toml
-  - sdk/python/uv.lock
-  - sdk/typescript/package.json
-  - sdk/typescript/package-lock.json
-  - sdk/c/CMakeLists.txt (project VERSION)
-  - sdk/go/moduleversion/version.go (Version)
+$(version_manifest_relative_labels)
 
 If VERSION is omitted, read it from ${CARGO_TOML}.
 EOF
@@ -201,15 +196,11 @@ fi
 
 validate_version "${version}"
 
-for file in \
-	"${CARGO_TOML}" \
-	"${CARGO_LOCK}" \
-	"${SDK_PYPROJECT}" \
-	"${SDK_UV_LOCK}" \
-	"${PACKAGE_JSON}" \
-	"${PACKAGE_LOCK}" \
-	"${C_CMAKE}" \
-	"${GO_VERSION}"; do
+mapfile -t manifest_files < <(version_manifest_paths "${ROOT}")
+for file in "${manifest_files[@]}"; do
+	if [[ "${file}" == "${TAG_FILE}" ]]; then
+		continue
+	fi
 	if [[ ! -f "${file}" ]]; then
 		printf 'error: missing %s\n' "${file}" | shorten_paths >&2
 		exit 1
@@ -226,6 +217,7 @@ update_package_json_version "${version}"
 update_package_lock_version "${version}"
 update_cmake_project_version "${version}"
 update_go_module_version "${version}"
+mkdir -p "$(dirname "${TAG_FILE}")"
 printf 'tag=%s\n' "${tag}" >"${TAG_FILE}"
 
 cat <<EOF | shorten_paths

@@ -222,36 +222,43 @@ repos:
         name: go-mod-tidy (sdk/go)
         entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh tidy
         language: system
-        files: ^sdk/go/
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
+        pass_filenames: false
+      - id: go-vet-repo-mod
+        name: go-vet (sdk/go)
+        entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh vet
+        language: system
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
         pass_filenames: false
       - id: go-staticcheck-repo-mod
         name: go-staticcheck (sdk/go)
         entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh staticcheck
         language: system
-        files: ^sdk/go/
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
         pass_filenames: false
       - id: go-critic
         name: go-critic (sdk/go)
         entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh critic
         language: system
-        files: ^sdk/go/.*\.go$
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
+        pass_filenames: false
       - id: go-sec-repo-mod
         name: go-sec (sdk/go)
         entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh sec
         language: system
-        files: ^sdk/go/
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
         pass_filenames: false
       - id: go-build-repo-mod
         name: go-build (sdk/go)
         entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh build
         language: system
-        files: ^sdk/go/
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
         pass_filenames: false
       - id: go-test-repo-mod
         name: go-test (sdk/go)
         entry: bash scripts/pre-commit-hooks/go-sdk-precommit.sh test
         language: system
-        files: ^sdk/go/
+        files: ^(sdk/go/|scripts/pre-commit-hooks/go-sdk-tool-versions\.sh)
         pass_filenames: false
 
   - repo: https://github.com/PyCQA/flake8

@@ -12,6 +12,8 @@ ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../lib/shorten-paths.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/version-manifests.sh"
 export SHORTEN_ROOT="${ROOT}"
 
 usage() {
@@ -31,10 +33,11 @@ Auto-bump (bump-patch / bump-minor):
 
 Steps:
   1. Run scripts/publish/sync-version.sh with the semver (without the leading v)
-  2. Commit only the version manifest files
+  2. Commit all version manifest files (including search/.publish-tag)
   3. Push the current branch
-  4. Force-create the git tag and push it
-  5. Create (or recreate) a GitHub Release for the tag
+  4. Force-create the monorepo git tag vX.Y.Z and push it
+  5. Force-create the Go module tag sdk/go/vX.Y.Z and push it
+  6. Create (or recreate) a GitHub Release for vX.Y.Z
 EOF
 }
 
@@ -55,16 +58,7 @@ require_command() {
 }
 
 version_files() {
-	cat <<EOF
-${ROOT}/Cargo.toml
-${ROOT}/Cargo.lock
-${ROOT}/sdk/python/pyproject.toml
-${ROOT}/sdk/python/uv.lock
-${ROOT}/sdk/typescript/package.json
-${ROOT}/sdk/typescript/package-lock.json
-${ROOT}/sdk/c/CMakeLists.txt
-${ROOT}/sdk/go/moduleversion/version.go
-EOF
+	version_manifest_paths "${ROOT}"
 }
 
 semver_tag_pattern='^v[0-9]+\.[0-9]+\.[0-9]+$'
@@ -198,6 +192,10 @@ git push origin HEAD
 git tag -f "${tag}"
 git push -f origin "${tag}"
 
+go_tag="sdk/go/${tag}"
+git tag -f "${go_tag}"
+git push -f origin "${go_tag}"
+
 notes="$(release_notes "${tag}")"
 if gh release view "${tag}" >/dev/null 2>&1; then
 	gh release delete "${tag}" -y
@@ -211,5 +209,6 @@ cat <<EOF | shorten_paths
 published ${tag}:
   branch: ${branch}
   commit: $(git rev-parse --short HEAD)
+  go module tag: ${go_tag}
   release: https://github.com/$(gh repo view --json nameWithOwner --jq .nameWithOwner)/releases/tag/${tag}
 EOF
