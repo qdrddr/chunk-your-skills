@@ -20,9 +20,18 @@ maybe_wait_registry() {
 	WAIT_REGISTRY_MAX_ATTEMPTS=1 "${SCRIPT_DIR}/wait-registry.sh" "$target" || true
 }
 
+uv_sync_cmd() {
+	local -a cmd=(uv sync)
+	if [[ -n "${UV_SYNC_REGISTRY_TARGET:-}" ]]; then
+		cmd+=(--refresh-package "${UV_SYNC_REFRESH_PACKAGE:-chunk-your-skills}")
+	fi
+	cmd+=("$@")
+	"${cmd[@]}"
+}
+
 attempt=1
 while [[ "$attempt" -le "$MAX_ATTEMPTS" ]]; do
-	if uv sync "$@"; then
+	if uv_sync_cmd "$@"; then
 		echo "uv sync succeeded (attempt ${attempt})"
 		exit 0
 	fi

@@ -51,12 +51,13 @@ jobs:
         with:
           python-version: "3.13"
           enable-cache: false
+          restore-cache: false
+          no-project: true
 
       - name: Render manifests
         run: sdk/e2e/scripts/render-manifests.sh
 
       - name: Wait for PyPI (chunk-your-skills)
-        continue-on-error: true
         run: sdk/e2e/scripts/wait-registry.sh pypi-sdk
 
       - name: Test published Python SDK

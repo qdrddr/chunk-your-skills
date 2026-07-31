@@ -16,20 +16,33 @@ SLEEP_SECS="${WAIT_REGISTRY_SLEEP_SECS:-30}"
 pypi_has_version() {
 	local package="$1"
 	local ver="$2"
-	# PyPI JSON API is reliable without a virtualenv. `uv pip install --dry-run`
-	# fails when no venv exists (common in CI wait steps before `uv sync`).
+	# PyPI JSON can list a release before the PEP 503 simple index (what uv uses) updates.
+	# Require both so wait-registry and `uv sync` agree on availability.
 	PYPI_PACKAGE="$package" PYPI_VERSION="$ver" python3 -c "
 import json
 import os
+import re
 import urllib.request
 
 pkg = os.environ['PYPI_PACKAGE']
 ver = os.environ['PYPI_VERSION']
-url = f'https://pypi.org/pypi/{pkg}/json'
-with urllib.request.urlopen(url, timeout=30) as resp:
-    data = json.load(resp)
+wheel_prefix = re.sub(r'[^A-Za-z0-9.]+', '_', pkg)
+
+def fetch(url: str) -> bytes:
+    with urllib.request.urlopen(url, timeout=30) as resp:
+        return resp.read()
+
+json_url = f'https://pypi.org/pypi/{pkg}/json'
+data = json.loads(fetch(json_url))
 releases = data.get('releases', {})
 if ver not in releases or not releases[ver]:
+    raise SystemExit(1)
+
+simple_url = f'https://pypi.org/simple/{pkg}/'
+simple_html = fetch(simple_url).decode('utf-8', 'replace')
+wheel_marker = f'{wheel_prefix}-{ver}-'
+sdist_marker = f'{wheel_prefix}-{ver}.tar.gz'
+if wheel_marker not in simple_html and sdist_marker not in simple_html:
     raise SystemExit(1)
 "
 }
