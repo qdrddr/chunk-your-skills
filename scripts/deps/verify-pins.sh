@@ -330,17 +330,23 @@ run_in_dir() {
 	(cd "${dir}" && run_cmd "$@")
 }
 
-requirements_body() {
+requirements_dev_body() {
 	local file="$1"
 	tail -n +3 "${file}"
 }
 
-requirements_files_match() {
+requirements_files_match_prod() {
+	local expected="$1"
+	local actual="$2"
+	diff -q "${expected}" "${actual}" >/dev/null 2>&1
+}
+
+requirements_files_match_dev() {
 	local expected="$1"
 	local actual="$2"
 	diff -q \
-		<(requirements_body "${expected}") \
-		<(requirements_body "${actual}") >/dev/null 2>&1
+		<(requirements_dev_body "${expected}") \
+		<(requirements_dev_body "${actual}") >/dev/null 2>&1
 }
 
 export_python_requirements() {
@@ -351,7 +357,7 @@ export_python_requirements() {
 	require_cmd uv
 	(
 		cd "${project_dir}"
-		run_cmd_quiet uv export --frozen --no-dev --all-extras \
+		run_cmd_quiet uv export --frozen --no-dev --no-header --all-extras \
 			--format requirements.txt --output-file "${out_req}"
 		run_cmd_quiet uv export --frozen --all-extras --group dev \
 			--format requirements.txt --output-file "${out_req_dev}"
@@ -373,9 +379,9 @@ verify_python_requirements_sync() {
 
 	if [[ ! -f "${project_dir}/requirements.txt" ]]; then
 		record_failure "python ${label} requirements.txt" \
-			"missing (run: uv export --frozen --no-dev --all-extras --project ${project_dir} --output-file ${project_dir}/requirements.txt)"
+			"missing (run: uv export --frozen --no-dev --no-header --all-extras --project ${project_dir} --output-file ${project_dir}/requirements.txt)"
 		issues=$((issues + 1))
-	elif ! requirements_files_match "${project_dir}/requirements.txt" "${req_prod}"; then
+	elif ! requirements_files_match_prod "${project_dir}/requirements.txt" "${req_prod}"; then
 		record_failure "python ${label} requirements.txt" \
 			"out of sync with uv.lock (prod export; excludes dev dependency group)"
 		issues=$((issues + 1))
@@ -385,7 +391,7 @@ verify_python_requirements_sync() {
 		record_failure "python ${label} requirements-dev.txt" \
 			"missing (run: uv export --frozen --all-extras --group dev --project ${project_dir} --output-file ${project_dir}/requirements-dev.txt)"
 		issues=$((issues + 1))
-	elif ! requirements_files_match "${project_dir}/requirements-dev.txt" "${req_dev}"; then
+	elif ! requirements_files_match_dev "${project_dir}/requirements-dev.txt" "${req_dev}"; then
 		record_failure "python ${label} requirements-dev.txt" \
 			"out of sync with uv.lock (dev export; includes dev dependency group)"
 		issues=$((issues + 1))

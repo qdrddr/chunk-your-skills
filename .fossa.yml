@@ -5,3 +5,14 @@ project:
 
 # SPDX allow-list and FOSSA-style obligations: legal/policy.toml
 # Mirror that policy in the FOSSA dashboard for CI parity with local audits.
+
+# Shipped Python wheel has no pip runtime deps; native code is in Cargo.lock.
+# Dev-only Python tools (pytest → pygments) live in requirements-dev.txt.
+targets:
+  exclude:
+    - type: uv
+      path: sdk/python/
+
+paths:
+  exclude:
+    - sdk/python/requirements-dev.txt

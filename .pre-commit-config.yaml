@@ -311,6 +311,7 @@ repos:
             "--frozen",
             "--quiet",
             "--no-dev",
+            "--no-header",
             "--all-extras",
             "--project",
             "sdk/python",
