@@ -532,6 +532,27 @@ verify_cargo_lock_no_patch_unused() {
 	return 1
 }
 
+run_cargo_metadata_locked_isolated() {
+	local crate_dir="$1"
+	local out_log="$2"
+	local tmp status
+
+	require_cmd rsync
+	tmp="$(mktemp -d)"
+
+	rsync -a \
+		--exclude target \
+		--exclude .git \
+		--exclude .venv \
+		--exclude 'sdk/python/.venv' \
+		"${crate_dir}/" "${tmp}/"
+
+	status=0
+	(cd "${tmp}" && cargo metadata --locked --format-version 1 --quiet) >"${out_log}" 2>&1 || status=$?
+	rm -rf "${tmp}"
+	return "${status}"
+}
+
 run_rust_lock_checks() {
 	local crate_dir="$1"
 	local label="$2"
@@ -539,18 +560,12 @@ run_rust_lock_checks() {
 	local meta_log
 
 	meta_log="$(mktemp)"
-	if ! run_in_dir "${crate_dir}" cargo metadata --locked --format-version 1 --quiet \
-		>"${meta_log}" 2>&1; then
+	if ! run_cargo_metadata_locked_isolated "${crate_dir}" "${meta_log}"; then
 		printf 'cargo metadata --locked: failed (lockfile out of sync with Cargo.toml)\n'
 		sed -n '1,8p' "${meta_log}"
-		if grep -q 'patch.unused\|patch `' "${meta_log}" 2>/dev/null ||
-			grep -q 'cannot update the lock file' "${meta_log}" 2>/dev/null; then
-			printf 'hint: parent monorepo [patch.crates-io] may be polluting Cargo.lock;\n'
-			printf '      see DEV.md (clear-tools root .cargo/config.toml)\n'
-		fi
 		failed=1
 	else
-		printf 'cargo metadata --locked: ok\n'
+		printf 'cargo metadata --locked: ok (standalone lockfile; ignores parent monorepo patches)\n'
 	fi
 	rm -f "${meta_log}"
 

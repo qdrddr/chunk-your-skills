@@ -141,4 +141,7 @@ dependencies of `chunk-your-skills`; Cargo adds them when this checkout inherits
 This repo's `.cargo/config.toml` only overrides `chunk-your-skills` to `path = "."` when nested,
 so local edits use this tree instead of a versioned worktree path.
 
-`./scripts/deps/verify-pins.sh` fails if `[[patch.unused]]` appears in `Cargo.lock`.
+`./scripts/deps/verify-pins.sh` fails if `[[patch.unused]]` appears in `Cargo.lock`. Rust
+lock validation runs in an isolated copy of the repo so parent `clear-your-tools` patch
+config does not affect the check (see `run_cargo_metadata_locked_isolated` in
+`scripts/deps/verify-pins.sh`).
