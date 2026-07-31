@@ -204,6 +204,17 @@ PY
 		cys_run uv run pytest tests
 	}
 
+	cys_verify_pins() {
+		require_repo_root
+		cd "${CYS_REPO_ROOT}" || die "cd failed"
+		info "verify dependency pins"
+		if [[ -n "${CYS_LOCAL_DEV_SHORT:-}" ]]; then
+			cys_run rtk bash scripts/deps/verify-pins.sh --short --no-report
+		else
+			cys_run rtk bash scripts/deps/verify-pins.sh --no-report
+		fi
+	}
+
 	cys_run_all() {
 		cys_section "Core (Rust)"
 		cys_build_rust

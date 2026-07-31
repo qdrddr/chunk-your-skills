@@ -29,8 +29,10 @@ groups:
     - ty-check
     - uv-build
     - uv-export
+    - uv-export-dev-requirements
     - uv-lock
     - uv-sync
+    - verify-pins
     - verify-sdk
 
   rust:
@@ -45,6 +47,7 @@ groups:
     - cbindgen-header-drift
     - c-header-sync
     - local-dev-core-rust
+    - verify-pins
     - verify-sdk
 
   go:
@@ -60,6 +63,7 @@ groups:
     - go-build-repo-mod
     - go-test-repo-mod
     - local-dev-sdk-go
+    - verify-pins
 
   c:
     - build-c-lib-for-go
@@ -72,6 +76,7 @@ groups:
     - cppcheck
     - cpplint
     - local-dev-sdk-c
+    - verify-pins
 
   ts:
     - all-fallow
@@ -82,6 +87,7 @@ groups:
     - typescript-sort-package-json
     - typescript-test
     - typescript-typecheck
+    - verify-pins
 
   uni:
     - actionlint
@@ -114,5 +120,6 @@ groups:
     - trailing-whitespace
     - trufflehog
     - typos
+    - verify-pins
     - psscriptanalyzer-check
     - psscriptanalyzer-format

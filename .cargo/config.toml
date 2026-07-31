@@ -1,4 +1,5 @@
-# Override inherited [patch.crates-io] from the clear-your-tools monorepo parent
-# (../.cargo/config.toml). Parent patches are unused in this crate and cause
-# [[patch.unused]] churn in Cargo.lock on every cargo/maturin invocation.
+# Shadow monorepo parent [patch.crates-io] for chunk-your-skills (see ../.cargo/config.toml).
+# Overriding the crate to its own manifest path prevents [[patch.unused]] churn in
+# Cargo.lock when parent sync-version bumps versioned worktree paths.
 [patch.crates-io]
+chunk-your-skills = { path = "." }

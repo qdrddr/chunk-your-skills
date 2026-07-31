@@ -10,6 +10,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  verify-pins:
+    name: Dependency pins
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.8"
+          cache-dependency-path: sdk/go/go.sum
+
+      - name: Verify lockfiles and pinned exports
+        run: ./scripts/deps/verify-pins.sh --short --no-report
+
   rust:
     name: Rust (chunk-your-skills)
     runs-on: ubuntu-latest

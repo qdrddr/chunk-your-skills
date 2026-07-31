@@ -12,11 +12,13 @@
 #   sdk-c                cmake build + ctest (sdk/c)
 #   sdk-go               build C FFI + go test (sdk/go)
 #   sdk-all              all SDK targets above
+#   verify-pins          lockfiles + pinned requirements (scripts/deps/verify-pins.sh)
 #   ci                   rust + sdk smoke checks
 #   all                  core-rust → all SDKs
 #
 # Examples:
 #   ./scripts/local/dev/workflow.sh all
+#   ./scripts/local/dev/workflow.sh verify-pins
 #   ./scripts/local/dev/workflow.sh --silent sdk-go
 set -euo pipefail
 
@@ -95,9 +97,13 @@ _cys_local_dev_main() {
 		cys_run_all
 		info "all done"
 		;;
+	verify-pins)
+		cys_verify_pins
+		;;
 	ci)
 		require_repo_root
 		cys_section "CI"
+		cys_verify_pins
 		cys_build_rust
 		cys_build_sdk_python
 		cys_verify_sdk_python

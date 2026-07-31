@@ -260,10 +260,10 @@ Writes pinned-version inventory and check results under:
   scripts/deps/output/audit-YYYYMMDD-HHMMSS/
 
 Checked targets:
-  sdk/python     uv.lock
+  sdk/python     uv.lock, requirements.txt (prod), requirements-dev.txt (dev)
   Cargo.toml     Cargo.lock (semver ranges in manifest; exact pins in lockfile)
   sdk/c          CMakeLists.txt VERSION + synced chunk_your_skills.h
-  sdk/go         go.sum
+  sdk/go         go.sum (go mod verify + go mod tidy)
   package.json   package-lock.json (root + sdk/typescript)
 
 Options:
@@ -330,25 +330,90 @@ run_in_dir() {
 	(cd "${dir}" && run_cmd "$@")
 }
 
+requirements_body() {
+	local file="$1"
+	tail -n +3 "${file}"
+}
+
+requirements_files_match() {
+	local expected="$1"
+	local actual="$2"
+	diff -q \
+		<(requirements_body "${expected}") \
+		<(requirements_body "${actual}") >/dev/null 2>&1
+}
+
+export_python_requirements() {
+	local project_dir="$1"
+	local out_req="$2"
+	local out_req_dev="$3"
+
+	require_cmd uv
+	(
+		cd "${project_dir}"
+		run_cmd_quiet uv export --frozen --no-dev --all-extras \
+			--format requirements.txt --output-file "${out_req}"
+		run_cmd_quiet uv export --frozen --all-extras --group dev \
+			--format requirements.txt --output-file "${out_req_dev}"
+	)
+}
+
+verify_python_requirements_sync() {
+	local label="$1"
+	local project_dir="$2"
+	local tmp_dir req_prod req_dev
+	local issues=0
+
+	tmp_dir="$(mktemp -d)"
+	req_prod="${tmp_dir}/requirements.txt"
+	req_dev="${tmp_dir}/requirements-dev.txt"
+
+	info "python ${label}: verify requirements.txt (prod) and requirements-dev.txt (dev)"
+	export_python_requirements "${project_dir}" "${req_prod}" "${req_dev}"
+
+	if [[ ! -f "${project_dir}/requirements.txt" ]]; then
+		record_failure "python ${label} requirements.txt" \
+			"missing (run: uv export --frozen --no-dev --all-extras --project ${project_dir} --output-file ${project_dir}/requirements.txt)"
+		issues=$((issues + 1))
+	elif ! requirements_files_match "${project_dir}/requirements.txt" "${req_prod}"; then
+		record_failure "python ${label} requirements.txt" \
+			"out of sync with uv.lock (prod export; excludes dev dependency group)"
+		issues=$((issues + 1))
+	fi
+
+	if [[ ! -f "${project_dir}/requirements-dev.txt" ]]; then
+		record_failure "python ${label} requirements-dev.txt" \
+			"missing (run: uv export --frozen --all-extras --group dev --project ${project_dir} --output-file ${project_dir}/requirements-dev.txt)"
+		issues=$((issues + 1))
+	elif ! requirements_files_match "${project_dir}/requirements-dev.txt" "${req_dev}"; then
+		record_failure "python ${label} requirements-dev.txt" \
+			"out of sync with uv.lock (dev export; includes dev dependency group)"
+		issues=$((issues + 1))
+	fi
+
+	rm -rf "${tmp_dir}"
+	[[ "${issues}" -eq 0 ]]
+}
+
 report_python_inventory() {
 	local label="$1"
 	local project_dir="$2"
-	local slug_name out_req out_pylock
+	local slug_name out_req out_req_dev out_pylock
 
 	require_cmd uv
 	slug_name="$(slug "${label}")"
 	out_req="$(report_path "python-${slug_name}-requirements.txt")"
+	out_req_dev="$(report_path "python-${slug_name}-requirements-dev.txt")"
 	out_pylock="$(report_path "pylock.${slug_name}.toml")"
 
-	info "python ${label}: export pinned versions"
+	info "python ${label}: export pinned versions (prod + dev)"
+	export_python_requirements "${project_dir}" "${out_req}" "${out_req_dev}"
 	(
 		cd "${project_dir}"
 		run_cmd_quiet uv export --frozen --all-extras --group dev \
-			--format requirements.txt --output-file "${out_req}"
-		run_cmd_quiet uv export --frozen --all-extras --group dev \
 			--format pylock.toml --output-file "${out_pylock}"
 	)
-	write_summary_line "python ${label}: inventory -> python-${slug_name}-requirements.txt, pylock.${slug_name}.toml"
+	write_summary_line "python ${label}: inventory -> python-${slug_name}-requirements.txt (prod), python-${slug_name}-requirements-dev.txt (dev), pylock.${slug_name}.toml"
 }
 
 verify_python_lock() {
@@ -367,13 +432,18 @@ verify_python_lock() {
 	[[ "${DO_REPORT}" -eq 1 ]] && out_check="$(report_path "python-${slug_name}-lock-check.txt")"
 
 	info "python ${label}: uv lock --check"
-	if run_checked "${out_check}" run_in_dir "${project_dir}" uv lock --check; then
-		[[ "${DO_REPORT}" -eq 1 ]] &&
-			write_summary_line "python ${label}: lock check -> python-${slug_name}-lock-check.txt"
-		[[ "${DO_REPORT}" -eq 1 ]] && report_python_inventory "${label}" "${project_dir}"
-		return 0
+	if ! run_checked "${out_check}" run_in_dir "${project_dir}" uv lock --check; then
+		return 1
 	fi
-	return 1
+	[[ "${DO_REPORT}" -eq 1 ]] &&
+		write_summary_line "python ${label}: lock check -> python-${slug_name}-lock-check.txt"
+
+	if ! verify_python_requirements_sync "${label}" "${project_dir}"; then
+		return 1
+	fi
+
+	[[ "${DO_REPORT}" -eq 1 ]] && report_python_inventory "${label}" "${project_dir}"
+	return 0
 }
 
 read_cargo_toml_dep_names() {
@@ -448,6 +518,75 @@ verify_cargo_manifest_lock_policy() {
 	return 0
 }
 
+read_parent_patch_version() {
+	local crate_name="$1"
+	local parent_config="${REPO_ROOT}/../.cargo/config.toml"
+	local line
+
+	[[ -f "${parent_config}" ]] || return 0
+
+	line="$(
+		grep -E "^[[:space:]]*${crate_name}[[:space:]]*=" "${parent_config}" |
+			head -1 ||
+			true
+	)"
+	[[ -n "${line}" ]] || return 0
+
+	if [[ "${line}" =~ -v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+		printf '%s\n' "${BASH_REMATCH[1]}"
+	fi
+}
+
+read_lock_patch_unused_version() {
+	local lock_file="$1"
+	local crate_name="$2"
+
+	awk -v want="${crate_name}" '
+		/^\[\[patch\.unused\]\]/ { block=1; name=""; version=""; next }
+		block && /^name = / {
+			gsub(/"/, "", $3)
+			name=$3
+			next
+		}
+		block && /^version = / {
+			gsub(/"/, "", $3)
+			version=$3
+			if (name == want) {
+				print version
+				exit 0
+			}
+			block=0
+			next
+		}
+	' "${lock_file}"
+}
+
+verify_cargo_patch_unused_versions() {
+	local crate_dir="$1"
+	local lock="${crate_dir}/Cargo.lock"
+	local parent_version lock_version issues=0
+
+	parent_version="$(read_parent_patch_version "chunk-your-tools")"
+	[[ -n "${parent_version}" ]] || return 0
+
+	lock_version="$(read_lock_patch_unused_version "${lock}" "chunk-your-tools")"
+	if [[ -z "${lock_version}" ]]; then
+		printf 'Cargo.lock: missing [[patch.unused]] for chunk-your-tools (parent monorepo patch v%s)\n' \
+			"${parent_version}"
+		printf 'fix: run cargo metadata --format-version 1 --quiet in %s\n' "${crate_dir}"
+		return 1
+	fi
+
+	if [[ "${lock_version}" != "${parent_version}" ]]; then
+		printf 'Cargo.lock: [[patch.unused]] chunk-your-tools v%s != parent patch v%s\n' \
+			"${lock_version}" "${parent_version}"
+		printf 'fix: run cargo metadata --format-version 1 --quiet in %s\n' "${crate_dir}"
+		return 1
+	fi
+
+	return 0
+}
+
 run_rust_lock_checks() {
 	local crate_dir="$1"
 	local label="$2"
@@ -458,12 +597,22 @@ run_rust_lock_checks() {
 	if ! run_in_dir "${crate_dir}" cargo metadata --locked --format-version 1 --quiet \
 		>"${meta_log}" 2>&1; then
 		printf 'cargo metadata --locked: failed (lockfile out of sync with Cargo.toml)\n'
-		sed -n '1,5p' "${meta_log}"
+		sed -n '1,8p' "${meta_log}"
+		if grep -q 'patch.unused\|patch `' "${meta_log}" 2>/dev/null ||
+			grep -q 'cannot update the lock file' "${meta_log}" 2>/dev/null; then
+			printf 'hint: monorepo parent [patch.crates-io] may have drifted; run:\n'
+			printf '  cargo metadata --format-version 1 --quiet\n'
+			printf '  (in %s, then commit Cargo.lock if only [[patch.unused]] changed)\n' "${crate_dir}"
+		fi
 		failed=1
 	else
 		printf 'cargo metadata --locked: ok\n'
 	fi
 	rm -f "${meta_log}"
+
+	if ! verify_cargo_patch_unused_versions "${crate_dir}"; then
+		failed=1
+	fi
 
 	if ! verify_cargo_manifest_lock_policy "${crate_dir}" "${label}"; then
 		failed=1
@@ -544,6 +693,40 @@ report_go_inventory() {
 	write_summary_line "go: inventory -> go-modules.txt, go-sum.txt"
 }
 
+verify_go_mod_tidy() {
+	local label="$1"
+	local mod_dir="$2"
+	local tmp_mod tmp_sum
+
+	[[ -f "${mod_dir}/go.sum" ]] || return 0
+
+	tmp_mod="$(mktemp)"
+	tmp_sum="$(mktemp)"
+	cp "${mod_dir}/go.mod" "${tmp_mod}"
+	cp "${mod_dir}/go.sum" "${tmp_sum}"
+
+	info "go ${label}: go mod tidy --check"
+	if ! run_in_dir "${mod_dir}" go mod tidy; then
+		cp "${tmp_mod}" "${mod_dir}/go.mod"
+		cp "${tmp_sum}" "${mod_dir}/go.sum"
+		rm -f "${tmp_mod}" "${tmp_sum}"
+		return 1
+	fi
+
+	if ! diff -q "${tmp_sum}" "${mod_dir}/go.sum" >/dev/null 2>&1; then
+		cp "${tmp_mod}" "${mod_dir}/go.mod"
+		cp "${tmp_sum}" "${mod_dir}/go.sum"
+		rm -f "${tmp_mod}" "${tmp_sum}"
+		printf 'go.sum out of sync with go.mod (run: go mod tidy in %s)\n' "${mod_dir}"
+		return 1
+	fi
+
+	cp "${tmp_mod}" "${mod_dir}/go.mod"
+	cp "${tmp_sum}" "${mod_dir}/go.sum"
+	rm -f "${tmp_mod}" "${tmp_sum}"
+	return 0
+}
+
 verify_go_module_lock() {
 	local label="$1"
 	local mod_dir="$2"
@@ -559,7 +742,15 @@ verify_go_module_lock() {
 	fi
 
 	info "go ${label}: go mod verify"
-	run_checked "${out_check}" run_in_dir "${mod_dir}" go mod verify
+	if ! run_checked "${out_check}" run_in_dir "${mod_dir}" go mod verify; then
+		return 1
+	fi
+
+	if ! verify_go_mod_tidy "${label}" "${mod_dir}"; then
+		return 1
+	fi
+
+	return 0
 }
 
 verify_go_lock() {

@@ -270,6 +270,28 @@ repos:
 
   - repo: local
     hooks:
+      - id: uv-export-dev-requirements
+        name: uv-export dev requirements
+        entry: bash scripts/pre-commit-hooks/prek-hook.sh
+        args:
+          [
+            'cd "$(git rev-parse --show-toplevel)" && rtk uv export --frozen --quiet --all-extras --group dev --project sdk/python --output-file sdk/python/requirements-dev.txt',
+          ]
+        language: system
+        files: ^sdk/python/(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+
+      - id: verify-pins
+        name: verify dependency pins
+        entry: bash scripts/pre-commit-hooks/prek-hook.sh
+        args:
+          [
+            'cd "$(git rev-parse --show-toplevel)" && rtk bash scripts/deps/verify-pins.sh --short --no-report',
+          ]
+        language: system
+        files: ^(Cargo\.(toml|lock)|\.cargo/config\.toml|sdk/python/(pyproject\.toml|uv\.lock|requirements(-dev)?\.txt)|sdk/go/go\.(mod|sum)|sdk/c/CMakeLists\.txt|package\.json|package-lock\.json|sdk/typescript/package\.json|sdk/typescript/package-lock\.json|scripts/deps/verify-pins\.sh)$
+        pass_filenames: false
+
       - id: sync-version
         name: sync-version
         entry: bash scripts/pre-commit-hooks/prek-hook.sh
@@ -283,15 +305,19 @@ repos:
     rev: 0.11.17
     hooks:
       - id: uv-export
+        name: uv-export prod requirements
         args:
           [
             "--frozen",
             "--quiet",
+            "--no-dev",
+            "--all-extras",
             "--project",
             "sdk/python",
-            "--output-file=sdk/python/requirements.txt",
+            "--output-file",
+            "sdk/python/requirements.txt",
           ]
-        files: sdk/python/pyproject.toml
+        files: sdk/python/(pyproject.toml|uv.lock)
       - id: uv-lock
         args: ["--project", "sdk/python"]
         files: sdk/python/pyproject.toml
