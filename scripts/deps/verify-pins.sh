@@ -518,73 +518,18 @@ verify_cargo_manifest_lock_policy() {
 	return 0
 }
 
-read_parent_patch_version() {
-	local crate_name="$1"
-	local parent_config="${REPO_ROOT}/../.cargo/config.toml"
-	local line
+verify_cargo_lock_no_patch_unused() {
+	local lock="${1}/Cargo.lock"
 
-	[[ -f "${parent_config}" ]] || return 0
-
-	line="$(
-		grep -E "^[[:space:]]*${crate_name}[[:space:]]*=" "${parent_config}" |
-			head -1 ||
-			true
-	)"
-	[[ -n "${line}" ]] || return 0
-
-	if [[ "${line}" =~ -v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-		printf '%s\n' "${BASH_REMATCH[1]}"
-	fi
-}
-
-read_lock_patch_unused_version() {
-	local lock_file="$1"
-	local crate_name="$2"
-
-	awk -v want="${crate_name}" '
-		/^\[\[patch\.unused\]\]/ { block=1; name=""; version=""; next }
-		block && /^name = / {
-			gsub(/"/, "", $3)
-			name=$3
-			next
-		}
-		block && /^version = / {
-			gsub(/"/, "", $3)
-			version=$3
-			if (name == want) {
-				print version
-				exit 0
-			}
-			block=0
-			next
-		}
-	' "${lock_file}"
-}
-
-verify_cargo_patch_unused_versions() {
-	local crate_dir="$1"
-	local lock="${crate_dir}/Cargo.lock"
-	local parent_version lock_version issues=0
-
-	parent_version="$(read_parent_patch_version "chunk-your-tools")"
-	[[ -n "${parent_version}" ]] || return 0
-
-	lock_version="$(read_lock_patch_unused_version "${lock}" "chunk-your-tools")"
-	if [[ -z "${lock_version}" ]]; then
-		printf 'Cargo.lock: missing [[patch.unused]] for chunk-your-tools (parent monorepo patch v%s)\n' \
-			"${parent_version}"
-		printf 'fix: run cargo metadata --format-version 1 --quiet in %s\n' "${crate_dir}"
-		return 1
+	if ! grep -q '^\[\[patch\.unused\]\]' "${lock}"; then
+		return 0
 	fi
 
-	if [[ "${lock_version}" != "${parent_version}" ]]; then
-		printf 'Cargo.lock: [[patch.unused]] chunk-your-tools v%s != parent patch v%s\n' \
-			"${lock_version}" "${parent_version}"
-		printf 'fix: run cargo metadata --format-version 1 --quiet in %s\n' "${crate_dir}"
-		return 1
-	fi
-
-	return 0
+	printf 'Cargo.lock: contains [[patch.unused]] (unrelated monorepo patches)\n'
+	printf 'fix: remove [[patch.unused]] stanzas from Cargo.lock and ensure the parent\n'
+	printf '      clear-your-tools/.cargo/config.toml does not define [patch.crates-io]\n'
+	printf '      at the monorepo root (see DEV.md)\n'
+	return 1
 }
 
 run_rust_lock_checks() {
@@ -600,9 +545,8 @@ run_rust_lock_checks() {
 		sed -n '1,8p' "${meta_log}"
 		if grep -q 'patch.unused\|patch `' "${meta_log}" 2>/dev/null ||
 			grep -q 'cannot update the lock file' "${meta_log}" 2>/dev/null; then
-			printf 'hint: monorepo parent [patch.crates-io] may have drifted; run:\n'
-			printf '  cargo metadata --format-version 1 --quiet\n'
-			printf '  (in %s, then commit Cargo.lock if only [[patch.unused]] changed)\n' "${crate_dir}"
+			printf 'hint: parent monorepo [patch.crates-io] may be polluting Cargo.lock;\n'
+			printf '      see DEV.md (clear-tools root .cargo/config.toml)\n'
 		fi
 		failed=1
 	else
@@ -610,7 +554,7 @@ run_rust_lock_checks() {
 	fi
 	rm -f "${meta_log}"
 
-	if ! verify_cargo_patch_unused_versions "${crate_dir}"; then
+	if ! verify_cargo_lock_no_patch_unused "${crate_dir}"; then
 		failed=1
 	fi
 

@@ -1,5 +1,6 @@
-# Shadow monorepo parent [patch.crates-io] for chunk-your-skills (see ../.cargo/config.toml).
-# Overriding the crate to its own manifest path prevents [[patch.unused]] churn in
-# Cargo.lock when parent sync-version bumps versioned worktree paths.
+# Optional: when this repo is nested under clear-your-tools/, override the parent
+# worktree patch so `cargo` uses this checkout (path ".") instead of chunk-your-skills-vX.Y.Z.
+# Parent root must NOT define [patch.crates-io] for chunk-your-tools — that unrelated
+# patch is what produces [[patch.unused]] noise in Cargo.lock (see DEV.md).
 [patch.crates-io]
 chunk-your-skills = { path = "." }

@@ -121,3 +121,24 @@ cp chunk_your_skills.h sdk/c/include/
 ```
 
 Or: `bash sdk/c/scripts/build-c-lib.sh` (builds the shared library and syncs the header by default).
+
+## Cargo.lock and monorepo patches
+
+`Cargo.lock` in this repo must **not** contain `[[patch.unused]]` stanzas. They are not
+dependencies of `chunk-your-skills`; Cargo adds them when this checkout inherits unrelated
+`[patch.crates-io]` entries from the parent **clear-your-tools** monorepo
+(`../.cargo/config.toml`), typically patches for `chunk-your-tools` worktrees.
+
+**Fix (do once, not via strip scripts):**
+
+1. Remove any `[[patch.unused]]` blocks from `Cargo.lock` (delete the lines; do not commit them).
+2. Ensure `clear-your-tools/.cargo/config.toml` does **not** define `[patch.crates-io]` at the
+   monorepo root. Cross-crate worktree patches belong on the indexer workspace that needs them,
+   not on every nested checkout.
+3. Use normal `cargo generate-lockfile` / `cargo build` — they stay clean when parent config is
+   correct.
+
+This repo's `.cargo/config.toml` only overrides `chunk-your-skills` to `path = "."` when nested,
+so local edits use this tree instead of a versioned worktree path.
+
+`./scripts/deps/verify-pins.sh` fails if `[[patch.unused]]` appears in `Cargo.lock`.
