@@ -9,6 +9,12 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+_LIB_DIR = Path(__file__).resolve().parents[2] / "lib"
+if str(_LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LIB_DIR))
+
+from path_guard import resolve_repo_root  # noqa: E402
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - py3.10
@@ -165,6 +171,7 @@ def render_deny_toml_licenses_allow(policy: Policy) -> str:
 
 
 def sync_deny_toml(repo_root: Path, policy: Policy | None = None) -> bool:
+    repo_root = resolve_repo_root(repo_root)
     policy = policy or load_policy(str(repo_root))
     deny_path = repo_root / "deny.toml"
     text = deny_path.read_text(encoding="utf-8")
@@ -208,7 +215,11 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         return 0 if policy.license_allowed(license_arg) else 1
     if command == "sync-deny":
-        root = Path(repo_root).resolve() if repo_root else repo_root_from_here()
+        try:
+            root = resolve_repo_root(repo_root) if repo_root else repo_root_from_here()
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
         changed = sync_deny_toml(root, policy)
         print("updated deny.toml" if changed else "deny.toml already in sync")
         return 0

@@ -1,7 +1,18 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 
 import { mdToTree } from "chunk-your-skills";
+
+/** @param {string} file @param {string} label */
+function resolveWithinCwd(file, label) {
+  const resolved = resolve(file);
+  const cwd = process.cwd();
+  const rel = relative(cwd, resolved);
+  if (rel.startsWith("..")) {
+    throw new Error(`${label} must stay within ${cwd}: ${resolved}`);
+  }
+  return resolved;
+}
 
 /** @returns {{ file?: string, output?: string }} */
 export function parseTestArgs() {
@@ -16,7 +27,7 @@ export function parseTestArgs() {
 
 /** @param {string} file */
 export function resolveSnapshotPath(file) {
-  return resolve(file);
+  return resolveWithinCwd(file, "--file");
 }
 
 /** @param {string} path */
@@ -41,6 +52,7 @@ export function catalogDictFromSnapshot(markdown) {
 /** @param {{ json?: unknown[], md?: unknown[] }} catalog @param {string | undefined} outputFile */
 export function writeOutput(catalog, outputFile) {
   if (outputFile) {
-    writeFileSync(outputFile, JSON.stringify(catalog, null, 2));
+    const resolved = resolveWithinCwd(outputFile, "--output");
+    writeFileSync(resolved, JSON.stringify(catalog, null, 2));
   }
 }

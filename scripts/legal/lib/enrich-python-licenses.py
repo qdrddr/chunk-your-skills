@@ -7,6 +7,12 @@ import json
 import sys
 from pathlib import Path
 
+_LIB_DIR = Path(__file__).resolve().parents[2] / "lib"
+if str(_LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LIB_DIR))
+
+from path_guard import resolve_audit_path, resolve_repo_root, resolve_under  # noqa: E402
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover
@@ -94,7 +100,8 @@ def resolve_url(
     return project_dir.resolve().as_uri()
 
 
-def resolve_license_file(project_dir: Path) -> Path | None:
+def resolve_license_file(project_dir: Path, repo_root: Path) -> Path | None:
+    project_dir = resolve_under(repo_root, project_dir, label="PROJECT_DIR")
     for name in ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING"):
         candidate = project_dir / name
         if candidate.is_file():
@@ -111,12 +118,13 @@ def license_text_for_report(license_file: Path | None, *, markdown: bool) -> str
 
 
 def enrich_rows(rows: list[dict], project_dir: Path, repo_root: Path) -> list[dict]:
+    project_dir = resolve_under(repo_root, project_dir, label="PROJECT_DIR")
     pyproject_path = project_dir / "pyproject.toml"
     pyproject = load_toml(pyproject_path) if pyproject_path.is_file() else {}
     expected_name = project_name(pyproject)
     urls = project_urls(pyproject)
     repository = cargo_repository(repo_root)
-    license_file = resolve_license_file(project_dir)
+    license_file = resolve_license_file(project_dir, repo_root)
 
     enriched: list[dict] = []
     for row in rows:
@@ -181,9 +189,13 @@ def main(argv: list[str]) -> int:
         )
         return 2
 
-    project_dir = Path(argv[1]).resolve()
-    repo_root = Path(argv[2]).resolve()
-    json_path = Path(argv[3]).resolve()
+    try:
+        repo_root = resolve_repo_root(argv[2])
+        project_dir = resolve_under(repo_root, argv[1], label="PROJECT_DIR")
+        json_path = resolve_audit_path(argv[3], repo_root=repo_root)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     json_only = len(argv) == 5 and argv[4] == "--json-only"
 
     rows = json.loads(json_path.read_text(encoding="utf-8"))
@@ -192,7 +204,7 @@ def main(argv: list[str]) -> int:
         return 1
 
     enriched = enrich_rows(rows, project_dir, repo_root)
-    license_file = resolve_license_file(project_dir)
+    license_file = resolve_license_file(project_dir, repo_root)
 
     for row in enriched:
         name = str(row.get("Name", ""))

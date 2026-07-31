@@ -9,6 +9,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+_LIB_DIR = Path(__file__).resolve().parents[1] / "lib"
+if str(_LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LIB_DIR))
+
+from path_guard import open_output  # noqa: E402
+
 
 def _enum_key(value: Any) -> str:
     """Stable key for deduplicating enum values (JSON-compatible)."""
@@ -104,7 +110,7 @@ def main() -> None:
     rows.sort(key=lambda r: (r[key_idx], r[0], r[2]), reverse=True)
     top = rows[: args.top]
 
-    out = open(args.output, "w", encoding="utf-8") if args.output else sys.stdout
+    out = open_output(args.output, base=Path.cwd().resolve()) if args.output else sys.stdout
     try:
         out.write(
             "rank\tmax_enum\ttotal_enums\tunique_enums\tenum_fields\tserver_slug\tname\n",

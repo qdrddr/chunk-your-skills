@@ -13,6 +13,12 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
+_LIB_DIR = _SCRIPT_DIR.parents[1] / "lib"
+if str(_LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LIB_DIR))
+
+from path_guard import resolve_audit_path, resolve_repo_root  # noqa: E402
+
 from policy import Policy, load_policy, normalize_license  # noqa: E402
 
 
@@ -35,7 +41,8 @@ def load_json_object(path: Path) -> object:
         return obj
 
 
-def rust_lookup(audit_dir: Path) -> dict[str, dict[str, str]]:
+def rust_lookup(audit_dir: Path, repo_root: Path) -> dict[str, dict[str, str]]:
+    audit_dir = resolve_audit_path(audit_dir, repo_root=repo_root)
     path = audit_dir / "rust-license-chunk-your-skills.json"
     if not path.is_file():
         return {}
@@ -90,6 +97,7 @@ def _npm_dependency_path(report: Path, pkg: str, install_path: str) -> str:
 
 
 def read_project_version(repo_root: Path) -> str:
+    repo_root = resolve_repo_root(repo_root)
     cargo = repo_root / "Cargo.toml"
     match = re.search(r'^version\s*=\s*"(.+)"', cargo.read_text(encoding="utf-8"), re.M)
     return match.group(1) if match else "unknown"
@@ -98,7 +106,7 @@ def read_project_version(repo_root: Path) -> str:
 def build_tracked_components(
     repo_root: Path, audit_dir: Path, policy: Policy,
 ) -> list[TrackedComponent]:
-    rust = rust_lookup(audit_dir)
+    rust = rust_lookup(audit_dir, repo_root)
     npm = npm_lookup(audit_dir)
     version = read_project_version(repo_root)
     tracked: list[TrackedComponent] = [
@@ -250,8 +258,13 @@ def main() -> int:
         )
         return 2
 
-    repo_root = Path(sys.argv[1]).resolve()
-    audit_dir = Path(sys.argv[2]).resolve()
+    try:
+        repo_root = resolve_repo_root(sys.argv[1])
+        audit_dir = resolve_audit_path(sys.argv[2], repo_root=repo_root)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
     legal_dir = repo_root / "legal"
 
     if not audit_dir.is_dir():

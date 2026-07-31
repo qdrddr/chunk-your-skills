@@ -7,6 +7,12 @@ import json
 import sys
 from pathlib import Path
 
+_LIB_DIR = Path(__file__).resolve().parents[2] / "lib"
+if str(_LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LIB_DIR))
+
+from path_guard import resolve_audit_path, resolve_repo_root, resolve_under  # noqa: E402
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover
@@ -105,9 +111,14 @@ def main(argv: list[str]) -> int:
         )
         return 2
 
-    repo_root = Path(argv[1]).resolve()
-    output_dir = Path(argv[2]).resolve()
-    sdk_dir = repo_root / "sdk" / "c"
+    try:
+        repo_root = resolve_repo_root(argv[1])
+        output_dir = resolve_audit_path(argv[2], repo_root=repo_root)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    sdk_dir = resolve_under(repo_root, repo_root / "sdk" / "c", label="sdk/c")
 
     if not sdk_dir.is_dir():
         print(f"missing sdk dir: {sdk_dir}", file=sys.stderr)

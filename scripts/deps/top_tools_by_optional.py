@@ -10,6 +10,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, TextIO
 
+_LIB_DIR = Path(__file__).resolve().parents[1] / "lib"
+if str(_LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LIB_DIR))
+
+from path_guard import open_output  # noqa: E402
+
 
 def optional_property_count(schema: Any) -> int:
     """Count schema nodes whose description contains 'Optional.'."""
@@ -107,8 +113,13 @@ def main() -> None:
 
     write_tools_to_stdout = args.output is None
     write_slugs_to_stdout = slugs_output is None
+    output_base = Path.cwd().resolve()
 
-    tool_out = sys.stdout if write_tools_to_stdout else open(args.output, "w", encoding="utf-8")
+    tool_out = (
+        sys.stdout
+        if write_tools_to_stdout
+        else open_output(args.output, base=output_base)
+    )
     try:
         tool_out.write("rank\toptional_properties\tserver_slug\tname\n")
         for i, (n_optional, slug, name) in enumerate(top, 1):
@@ -120,11 +131,10 @@ def main() -> None:
     if write_tools_to_stdout and write_slugs_to_stdout:
         sys.stdout.write("\n")
 
-    slug_out = (
-        sys.stdout
-        if write_slugs_to_stdout
-        else open(slugs_output, "w", encoding="utf-8")
-    )
+    if write_slugs_to_stdout:
+        slug_out: TextIO = sys.stdout
+    else:
+        slug_out = open_output(slugs_output, base=output_base)
     try:
         write_slug_rows(slug_out, slug_totals, slug_tool_counts, args.top)
     finally:
