@@ -41,10 +41,13 @@ repos:
   #      - id: cargo-check
   #      - id: cargo-test
   # 1year old
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.11.0
+  - repo: local
     hooks:
       - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
         args: [-x]
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.13.1-1
@@ -87,7 +90,7 @@ repos:
     hooks:
       - id: prettier
         types_or: [yaml, json5, bash, javascript, ts, tsx]
-        exclude: ^(\.github/workflows/.*\.ya?ml$|examples/)
+        exclude: ^(\.github/workflows/.*\.ya?ml$|examples/|chunk-your-skills\.(cdx|snyk)\.json$)
       - id: prettier
         name: prettier github workflow yaml
         files: ^\.github/workflows/.*\.ya?ml$
@@ -103,8 +106,8 @@ repos:
     rev: v2.4.2
     hooks:
       - id: codespell # See typos.toml for allowed words
-        args: ["-L", "fallow,Fallow,Bui"]
-        exclude: ^(package-lock\.json|sdk/typescript/package-lock\.json|sdk/go/go\.sum)$
+        args: ["-L", "fallow,Fallow,Bui,Provices"]
+        exclude: ^(package-lock\.json|sdk/typescript/package-lock\.json|sdk/go/go\.sum|chunk-your-skills\.(cdx|snyk)\.json)$
   - repo: https://github.com/crate-ci/committed
     rev: v1.1.11
     hooks:
@@ -119,19 +122,26 @@ repos:
             "--baseline",
             ".secrets.baseline",
             "--exclude-files",
-            "app/migrations/versions/.*|ast-grep/rule-tests/.*|app/tests/test_bm25_migration.py|.env.example|.ast-grep/.*|.talismanrc",
+            "app/migrations/versions/.*|ast-grep/rule-tests/.*|app/tests/test_bm25_migration.py|.env.example|.ast-grep/.*|.talismanrc|chunk-your-skills\\.(cdx|snyk)\\.json",
           ]
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.0
     hooks:
       - id: gitleaks
+        exclude: ^chunk-your-skills\.(cdx|snyk)\.json$
 
   - repo: https://github.com/trufflesecurity/trufflehog
     rev: v3.92.3
     hooks:
       - id: trufflehog
-        args: ["--only-verified", "--trust-local-git-config"]
+        args:
+          [
+            "--only-verified",
+            "--trust-local-git-config",
+            "--exclude-paths",
+            ".trufflehog-exclude-paths",
+          ]
 
   - repo: https://github.com/thoughtworks/talisman
     rev: v1.37.0
@@ -373,6 +383,7 @@ repos:
       - id: check-added-large-files
         args: ["--maxkb=1024"]
       - id: trailing-whitespace
+        exclude: ^chunk-your-skills\.(cdx|snyk)\.json$
       - id: check-yaml
         exclude: ^(.ast-grep/rules/.*|\.github/workflows/.*)$
       - id: check-yaml
@@ -383,8 +394,9 @@ repos:
         exclude: ^examples/
       - id: check-toml
       - id: end-of-file-fixer
-        exclude: ^examples/
+        exclude: ^(examples/|chunk-your-skills\.(cdx|snyk)\.json$)
       - id: mixed-line-ending
+        exclude: ^chunk-your-skills\.(cdx|snyk)\.json$
       - id: detect-private-key
       - id: check-case-conflict
       - id: check-merge-conflict
@@ -708,6 +720,14 @@ repos:
         language: system
         files: ^(sdk/go/|sdk/c/|src/ffi/)
         pass_filenames: false
+
+      - id: export-rust-sbom
+        name: export-rust-sbom
+        entry: bash scripts/pre-commit-hooks/export-rust-sbom-precommit.sh
+        language: system
+        files: ^(Cargo\.(toml|lock)|src/)
+        pass_filenames: false
+        priority: 1
 
       # Keep `suggestion` last
       - id: suggestion

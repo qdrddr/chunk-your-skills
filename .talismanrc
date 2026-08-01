@@ -41,6 +41,14 @@
     {
       "filename": "hedl",
       "ignore_detectors": ["filesize"]
+    },
+    {
+      "filename": "chunk-your-skills.cdx.json",
+      "ignore_detectors": ["filesize", "content"]
+    },
+    {
+      "filename": "chunk-your-skills.snyk.json",
+      "ignore_detectors": ["filesize", "content"]
     }
   ]
 }

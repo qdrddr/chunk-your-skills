@@ -1,0 +1,5 @@
+# Generated SBOM (scripts/deps/export-rust-sbom.sh) — do not format by hand.
+chunk-your-skills.cdx.json
+chunk-your-skills.snyk.json
+# Catalog decomposition artifacts — do not format by hand.
+examples/catalog/

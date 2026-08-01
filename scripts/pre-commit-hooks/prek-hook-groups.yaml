@@ -38,6 +38,7 @@ groups:
   rust:
     - build-c-lib-for-go
     - cargo-audit
+    - export-rust-sbom
     - cargo-build-sdk-release
     - cargo-clippy
     - cargo-deny

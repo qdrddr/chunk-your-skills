@@ -1,8 +1,13 @@
 [files]
-extend-exclude = ["ui/src/components/creative-tim/blocks/*.tsx"]
+extend-exclude = [
+    "ui/src/components/creative-tim/blocks/*.tsx",
+    "chunk-your-skills.cdx.json",
+    "chunk-your-skills.snyk.json",
+    ]
 
 [default.extend-words]
 # Don't correct the surname "Bui"
 Bui = "Bui"
 fallow = "fallow"
 Fallow = "Fallow"
+Provices = "Provices"
