@@ -19,7 +19,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 source "${SCRIPT_DIR}/../lib/shorten-paths.sh"
 export SHORTEN_ROOT="${REPO_ROOT}"
 
-DO_MANIFEST_LINT=0
+DO_MANIFEST_LINT=1
 DO_REPORT=1
 OUTPUT_DIR=""
 SHORT=0
@@ -252,9 +252,10 @@ while [[ $# -gt 0 ]]; do
 		cat <<'EOF'
 Usage: verify-pins.sh [options]
 
-Verify lockfiles are in sync with manifests and (by default) flag loose direct
-dependency ranges in sdk/python/pyproject.toml and package.json files.
+Verify lockfiles are in sync with manifests and flag loose direct dependency
+ranges in sdk/python/pyproject.toml and package.json files.
 (Rust pins are enforced via Cargo.lock; Cargo.toml must use ranges, not exact pins.)
+Manifest range checks run by default; pass --no-manifest-lint to skip them.
 
 Writes pinned-version inventory and check results under:
   scripts/deps/output/audit-YYYYMMDD-HHMMSS/
@@ -264,6 +265,7 @@ Checked targets:
   Cargo.toml     Cargo.lock (semver ranges in manifest; exact pins in lockfile)
   sdk/c          CMakeLists.txt VERSION + synced chunk_your_skills.h
   sdk/go         go.sum (go mod verify + go mod tidy)
+  manifests      version fields synced (scripts/publish/sync-version.sh)
   package.json   package-lock.json (root + sdk/typescript)
 
 Options:
@@ -271,8 +273,8 @@ Options:
   --report              Write audit reports (default)
   --no-report           Skip report files; console output only
   --short               Emit only errors, warnings, and final pass/fail; shorten paths
-  --manifest-lint       Check manifests for loose semver ranges (optional)
-  --no-manifest-lint    Skip manifest range checks; lockfiles only (default)
+  --manifest-lint       Check manifests for loose semver ranges (default)
+  --no-manifest-lint    Skip manifest range checks; lockfiles only
   --skip TARGET         Skip python, rust, npm, go, or c (repeatable)
 
 Examples:
@@ -1004,6 +1006,138 @@ lint_cmake_project_version() {
 	record_ok "manifest ${label}"
 }
 
+read_toml_package_version() {
+	local file="$1"
+	grep -E '^version[[:space:]]*=' "${file}" |
+		head -1 |
+		sed -E 's/^version[[:space:]]*=[[:space:]]*"(.*)".*/\1/'
+}
+
+read_json_package_version() {
+	local file="$1"
+	grep -E '^  "version": "' "${file}" |
+		head -1 |
+		sed -E 's/^  "version": "(.*)",$/\1/'
+}
+
+read_go_module_version() {
+	local file="$1"
+	grep -E '^const Version = "' "${file}" |
+		head -1 |
+		sed -E 's/^const Version = "(.*)"/\1/'
+}
+
+read_publish_tag_version() {
+	local file="$1"
+	grep -E '^tag=v' "${file}" |
+		head -1 |
+		sed -E 's/^tag=v//'
+}
+
+read_cargo_lock_crate_version() {
+	local lock_file="$1"
+	local crate_name="$2"
+	awk -v want="${crate_name}" '
+		/^\[\[package\]\]/ { in_package=1; name=""; version=""; next }
+		/^\[\[/ && $0 !~ /^\[\[package\]\]/ { in_package=0 }
+		in_package && /^name = / {
+			gsub(/"/, "", $3)
+			name=$3
+			next
+		}
+		in_package && /^version = / {
+			gsub(/"/, "", $3)
+			version=$3
+			if (name == want) {
+				print version
+				exit 0
+			}
+			next
+		}
+	' "${lock_file}"
+}
+
+read_uv_lock_package_version() {
+	local lock_file="$1"
+	local package_name="$2"
+	awk -v want="${package_name}" '
+		/^name = / {
+			gsub(/"/, "", $3)
+			name=$3
+			next
+		}
+		/^version = / && name == want {
+			gsub(/"/, "", $3)
+			print $3
+			exit 0
+		}
+	' "${lock_file}"
+}
+
+verify_version_manifests_sync() {
+	local expected="$1"
+	local issues=0
+	local actual label
+
+	check_version() {
+		local name="$1"
+		local got="$2"
+		if [[ -z "${got}" ]]; then
+			append_manifest_lint "${name}: missing version"
+			issues=$((issues + 1))
+			return 0
+		fi
+		if [[ "${got}" != "${expected}" ]]; then
+			append_manifest_lint "${name}: version ${got} != Cargo.toml ${expected}"
+			issues=$((issues + 1))
+		fi
+	}
+
+	label="Cargo.toml (root)"
+	actual="$(read_toml_package_version "${REPO_ROOT}/Cargo.toml")"
+	check_version "${label}" "${actual}"
+
+	label="Cargo.lock (chunk-your-skills)"
+	actual="$(read_cargo_lock_crate_version "${REPO_ROOT}/Cargo.lock" "chunk-your-skills")"
+	check_version "${label}" "${actual}"
+
+	label="sdk/python/pyproject.toml"
+	actual="$(read_toml_package_version "${REPO_ROOT}/sdk/python/pyproject.toml")"
+	check_version "${label}" "${actual}"
+
+	label="sdk/python/uv.lock (chunk-your-skills)"
+	actual="$(read_uv_lock_package_version "${REPO_ROOT}/sdk/python/uv.lock" "chunk-your-skills")"
+	check_version "${label}" "${actual}"
+
+	label="sdk/typescript/package.json"
+	actual="$(read_json_package_version "${REPO_ROOT}/sdk/typescript/package.json")"
+	check_version "${label}" "${actual}"
+
+	label="sdk/typescript/package-lock.json"
+	actual="$(read_json_package_version "${REPO_ROOT}/sdk/typescript/package-lock.json")"
+	check_version "${label}" "${actual}"
+
+	label="sdk/c/CMakeLists.txt"
+	actual="$(read_cmake_project_version)"
+	check_version "${label}" "${actual}"
+
+	label="sdk/go/moduleversion/version.go"
+	actual="$(read_go_module_version "${REPO_ROOT}/sdk/go/moduleversion/version.go")"
+	check_version "${label}" "${actual}"
+
+	label="search/.publish-tag"
+	actual="$(read_publish_tag_version "${REPO_ROOT}/search/.publish-tag")"
+	check_version "${label}" "${actual}"
+
+	if [[ "${issues}" -gt 0 ]]; then
+		record_failure "version manifests" \
+			"${issues} out of sync (run: ./scripts/publish/sync-version.sh)"
+		return 1
+	fi
+	record_ok "version manifests"
+	return 0
+}
+
 verify_manifests() {
 	local had_failure=0
 
@@ -1027,6 +1161,8 @@ verify_manifests() {
 if [[ "${SHORT}" -eq 0 ]]; then
 	info "repo: ${REPO_ROOT}"
 fi
+
+run_step "version manifests" verify_version_manifests_sync "$(read_cargo_version)"
 
 if [[ "${SKIP_PYTHON}" -eq 0 ]]; then
 	run_step "python lock (sdk/python)" verify_python_lock "sdk/python" "${REPO_ROOT}/sdk/python"

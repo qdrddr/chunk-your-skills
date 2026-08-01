@@ -220,6 +220,10 @@ update_go_module_version "${version}"
 mkdir -p "$(dirname "${TAG_FILE}")"
 printf 'tag=%s\n' "${tag}" >"${TAG_FILE}"
 
+if [[ "${SKIP_VERIFY_PINS:-}" != "1" ]]; then
+	"${ROOT}/scripts/deps/verify-pins.sh" --short --no-report
+fi
+
 cat <<EOF | shorten_paths
 synced version ${version} to:
   ${CARGO_TOML}

@@ -86,6 +86,13 @@ if [[ -z "${CYS_LOCAL_DEV_LIB_SOURCED:-}" ]]; then
 		cys_run env -u CARGO_TARGET_DIR cargo test -p chunk-your-skills --no-default-features --features ffi --test ffi_smoke
 	}
 
+	cys_build_sdk_rust_release() {
+		require_cmd cargo
+		cd "${CYS_REPO_ROOT}" || die "cd failed"
+		info "cargo build -p chunk-your-skills --release --no-default-features --features python,node"
+		cys_run env -u CARGO_TARGET_DIR cargo build -p chunk-your-skills --release --no-default-features --features python,node
+	}
+
 	cys_build_sdk_python() {
 		require_cmd uv
 		cys_sync_sdk_python

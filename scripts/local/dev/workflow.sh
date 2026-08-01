@@ -6,6 +6,7 @@
 #
 # Commands:
 #   core-rust | rust     cargo test -p chunk-your-skills (+ ffi smoke)
+#   sdk-rust-release     release build for shipped Python + Node native code
 #   sdk-python           maturin develop --release + verify sdk/python
 #   sdk-verify           verify sdk/python install + native import
 #   sdk-typescript       npm ci, build, test (sdk/typescript)
@@ -58,6 +59,10 @@ _cys_local_dev_main() {
 	core-rust | rust)
 		require_repo_root
 		cys_build_rust
+		;;
+	sdk-rust-release)
+		require_repo_root
+		cys_build_sdk_rust_release
 		;;
 	sdk-python)
 		require_repo_root
