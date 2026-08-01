@@ -5,14 +5,47 @@ project:
 
 # SPDX allow-list and FOSSA-style obligations: legal/policy.toml
 # Mirror that policy in the FOSSA dashboard for CI parity with local audits.
+#
+# Production surfaces scanned by FOSSA:
+#   cargo@./              — shipped Rust CLI / native extension (Cargo.lock)
+#   gomod@sdk/go          — shipped Go SDK
+#   npm@sdk/typescript    — shipped TypeScript SDK
+#
+# Everything below is dev / CI / packaging / generated audit output and is excluded.
 
-# Shipped Python wheel has no pip runtime deps; native code is in Cargo.lock.
-# Dev-only Python tools (pytest → pygments) live in requirements-dev.txt.
 targets:
   exclude:
+    # uv.lock lists dev dependency groups (pytest → pygments); not shipped on PyPI.
     - type: uv
-      path: sdk/python/
+      path: sdk/python
+    - type: uv
+      path: sdk/e2e/python
+    # requirements-dev.txt and audit exports; prod Python wheel has no pip runtime deps.
+    - type: setuptools
+      path: sdk/python
+    - type: setuptools
+      path: scripts/deps/output
+    # Root package.json is repo CI/tooling only (fallow, typescript scripts).
+    - type: npm
+      path: .
+    # E2E harnesses are integration tests, not published SDK artifacts.
+    - type: npm
+      path: sdk/e2e/typescript
+    - type: gomod
+      path: sdk/e2e/go
 
 paths:
   exclude:
-    - sdk/python/requirements-dev.txt
+    # Dev-only Python lockfiles and requirement exports.
+    - "**/uv.lock"
+    - "**/requirements-dev.txt"
+    # Generated dependency audit inventories (local CI output).
+    - "**/scripts/deps/output/**"
+    # Rust build artifacts.
+    - "target/**"
+    # uv download cache (if present).
+    - "**/.uv-cache/**"
+    # Prefixed extract/build trees (e.g. chunk-your-skills-* staging dirs).
+    - "chunk-your-*/**"
+    # E2E integration tests (Python / Go / TypeScript harnesses).
+    - "sdk/e2e/**"
