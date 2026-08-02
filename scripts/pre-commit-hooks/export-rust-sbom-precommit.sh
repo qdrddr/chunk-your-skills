@@ -28,4 +28,4 @@ for file in "${CDX_FILE}" "${SNYK_FILE}"; do
 	}
 done
 
-run_cmd git add -- "${CDX_FILE}" "${SNYK_FILE}"
+run_cmd git add -f -- "${CDX_FILE}" "${SNYK_FILE}"
